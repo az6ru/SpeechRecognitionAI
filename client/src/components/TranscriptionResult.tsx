@@ -16,6 +16,16 @@ export default function TranscriptionResult({ transcription }: TranscriptionResu
     setTimeout(() => setCopied(false), 2000);
   };
 
+  if (!transcription.transcript) {
+    return (
+      <div className="bg-yellow-50 rounded-lg p-4">
+        <p className="text-yellow-800">
+          Нет текста для отображения. Возможно, произошла ошибка при транскрибации.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="bg-gray-50 rounded-lg p-4">

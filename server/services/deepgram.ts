@@ -72,7 +72,7 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       } else {
         console.log('No paragraphs found in response:', paragraphsData);
         // Если абзацы не найдены, разбиваем текст по точкам
-        paragraphs = transcript.split(/(?<=[.!?])\s+/);
+        paragraphs = transcript.split(/(?<=[.!?])\s+/).filter(p => p.trim());
       }
     }
 
