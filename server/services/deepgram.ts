@@ -63,9 +63,9 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       confidence,
       detected_language,
       duration,
-      model: result.metadata?.model, // Добавляем информацию о использованной модели
-      request_id: result.metadata?.request_id, // Добавляем ID запроса
-      features_used: { // Добавляем информацию об использованных функциях
+      model: result.metadata?.model,
+      request_id: result.metadata?.request_id,
+      features_used: {
         smart_format: deepgramOptions.smart_format,
         punctuate: deepgramOptions.punctuate,
         numerals: deepgramOptions.numerals
