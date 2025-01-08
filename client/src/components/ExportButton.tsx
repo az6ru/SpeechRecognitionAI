@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Save } from "lucide-react";
 import { jsPDF } from "jspdf";
+import { Document, Packer, Paragraph, TextRun } from "docx";
 import { saveAs } from "file-saver";
 import {
   DropdownMenu,
@@ -18,23 +19,39 @@ interface ExportButtonProps {
 export function ExportButton({ transcription }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
-  const exportAsPDF = () => {
+  const formatTextWithSpeakers = () => {
+    if (transcription.speakers && transcription.speakers.length > 0) {
+      return transcription.speakers.map((speaker, idx) => 
+        `Спикер ${speaker.speaker + 1}:\n${speaker.text}\n`
+      ).join('\n');
+    }
+    return transcription.transcript;
+  };
+
+  const exportAsPDF = async () => {
     setIsExporting(true);
     try {
       const doc = new jsPDF();
 
-      // Добавляем заголовок
+      // Add custom font for Cyrillic support
+      doc.setFont("helvetica");
       doc.setFontSize(16);
       doc.text("Транскрипция", 20, 20);
 
-      // Добавляем текст транскрипции
       doc.setFontSize(12);
+      const formattedText = formatTextWithSpeakers();
+      const splitText = doc.splitTextToSize(formattedText, 170);
 
-      // Разбиваем текст на строки с учетом ширины страницы
-      const lines = doc.splitTextToSize(transcription.transcript, 170);
-      doc.text(lines, 20, 30);
+      let y = 40;
+      splitText.forEach((line: string) => {
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(line, 20, y);
+        y += 7;
+      });
 
-      // Сохраняем файл
       doc.save("transcription.pdf");
     } catch (error) {
       console.error("Error exporting to PDF:", error);
@@ -43,11 +60,61 @@ export function ExportButton({ transcription }: ExportButtonProps) {
     }
   };
 
-  const exportAsDocx = () => {
+  const exportAsDocx = async () => {
     setIsExporting(true);
     try {
-      // Создаем простой .docx файл как текстовый документ
-      const blob = new Blob([transcription.transcript], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Транскрипция",
+                  bold: true,
+                  size: 32,
+                }),
+              ],
+            }),
+            new Paragraph({
+              children: [new TextRun("")],
+            }),
+            ...(transcription.speakers?.map((speaker) => [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Спикер ${speaker.speaker + 1}:`,
+                    bold: true,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: speaker.text,
+                    size: 24,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                children: [new TextRun("")],
+              }),
+            ]).flat() || [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: transcription.transcript,
+                    size: 24,
+                  }),
+                ],
+              }),
+            ]),
+          ],
+        }],
+      });
+
+      const blob = await Packer.toBlob(doc);
       saveAs(blob, "transcription.docx");
     } catch (error) {
       console.error("Error exporting to DOCX:", error);
@@ -59,7 +126,8 @@ export function ExportButton({ transcription }: ExportButtonProps) {
   const exportAsTxt = () => {
     setIsExporting(true);
     try {
-      const blob = new Blob([transcription.transcript], { type: "text/plain;charset=utf-8" });
+      const formattedText = formatTextWithSpeakers();
+      const blob = new Blob([formattedText], { type: "text/plain;charset=utf-8" });
       saveAs(blob, "transcription.txt");
     } catch (error) {
       console.error("Error exporting to TXT:", error);

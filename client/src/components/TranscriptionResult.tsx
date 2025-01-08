@@ -8,6 +8,14 @@ interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
 }
 
+const SPEAKER_COLORS = [
+  'border-blue-400 bg-blue-50',
+  'border-green-400 bg-green-50',
+  'border-purple-400 bg-purple-50',
+  'border-orange-400 bg-orange-50',
+  'border-pink-400 bg-pink-50',
+];
+
 export function TranscriptionResult({ transcription }: TranscriptionResultProps) {
   const [copied, setCopied] = useState(false);
 
@@ -16,15 +24,6 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  console.log('TranscriptionResult received:', {
-    hasTranscript: !!transcription.transcript,
-    hasParagraphs: Array.isArray(transcription.paragraphs),
-    paragraphsLength: transcription.paragraphs?.length,
-    hasSpeakers: Array.isArray(transcription.speakers),
-    speakersLength: transcription.speakers?.length,
-    confidence: transcription.confidence,
-  });
 
   if (!transcription.transcript) {
     return (
@@ -40,11 +39,13 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
     <div className="space-y-4">
       <div className="bg-gray-50 rounded-lg p-4">
         {transcription.speakers && transcription.speakers.length > 0 ? (
-          // Отображаем текст с разделением по спикерам
-          <div className="space-y-6">
+          <div className="space-y-4">
             {transcription.speakers.map((speaker, index) => (
-              <div key={index} className="border-l-4 border-primary pl-4">
-                <p className="font-semibold text-sm text-primary mb-2">
+              <div 
+                key={index} 
+                className={`border-l-4 pl-4 p-3 rounded-r-lg ${SPEAKER_COLORS[index % SPEAKER_COLORS.length]}`}
+              >
+                <p className="font-semibold text-sm mb-2">
                   Спикер {speaker.speaker + 1}
                 </p>
                 <p className="text-gray-700">{speaker.text}</p>
@@ -52,7 +53,6 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
             ))}
           </div>
         ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
-          // Отображаем форматированный текст по абзацам
           <div className="space-y-4">
             {transcription.paragraphs.map((paragraph: string, index: number) => (
               <p key={index} className="text-gray-700">
@@ -61,7 +61,6 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
             ))}
           </div>
         ) : (
-          // Отображаем весь текст как есть
           <p className="text-gray-700 whitespace-pre-wrap">
             {transcription.transcript}
           </p>
@@ -89,12 +88,6 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
         </Button>
         <ExportButton transcription={transcription} />
       </div>
-
-      {transcription.confidence && (
-        <p className="text-sm text-gray-500">
-          Confidence score: {Math.round(transcription.confidence * 100)}%
-        </p>
-      )}
     </div>
   );
 }
