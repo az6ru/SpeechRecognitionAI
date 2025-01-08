@@ -3,15 +3,25 @@ import { useDropzone } from "react-dropzone";
 import { Upload, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { TranscriptionResponse } from "../lib/types";
+import { TranscriptionResponse, TranscriptionOptions } from "../lib/types";
+import TranscriptionOptionsForm from "./TranscriptionOptions";
 
 interface FileUploadProps {
   onTranscriptionComplete: (result: TranscriptionResponse) => void;
 }
 
+const DEFAULT_OPTIONS: TranscriptionOptions = {
+  model: "enhanced",
+  smart_format: true,
+  punctuate: true,
+  numerals: true,
+  detect_language: true
+};
+
 export default function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [options, setOptions] = useState<TranscriptionOptions>(DEFAULT_OPTIONS);
   const { toast } = useToast();
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -23,6 +33,7 @@ export default function FileUpload({ onTranscriptionComplete }: FileUploadProps)
 
     const formData = new FormData();
     formData.append("audio", file);
+    formData.append("options", JSON.stringify(options));
 
     try {
       const response = await fetch("/api/transcribe", {
@@ -37,20 +48,20 @@ export default function FileUpload({ onTranscriptionComplete }: FileUploadProps)
       const result = await response.json();
       onTranscriptionComplete(result);
       toast({
-        title: "Success",
-        description: "Audio transcription completed successfully",
+        title: "Успех",
+        description: "Аудио успешно транскрибировано",
       });
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to transcribe audio file",
+        title: "Ошибка",
+        description: "Не удалось транскрибировать аудио файл",
       });
     } finally {
       setIsUploading(false);
       setProgress(0);
     }
-  }, [onTranscriptionComplete, toast]);
+  }, [onTranscriptionComplete, toast, options]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -61,7 +72,9 @@ export default function FileUpload({ onTranscriptionComplete }: FileUploadProps)
   });
 
   return (
-    <div>
+    <div className="space-y-6">
+      <TranscriptionOptionsForm options={options} onChange={setOptions} />
+
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
@@ -72,11 +85,11 @@ export default function FileUpload({ onTranscriptionComplete }: FileUploadProps)
         <Upload className="mx-auto h-12 w-12 text-gray-400" />
         <p className="mt-2 text-sm text-gray-600">
           {isDragActive
-            ? "Drop the audio file here"
-            : "Drag and drop an audio file, or click to select"}
+            ? "Перетащите аудио файл сюда"
+            : "Перетащите аудио файл или нажмите для выбора"}
         </p>
         <p className="text-xs text-gray-500 mt-1">
-          Supports MP3, WAV, M4A, FLAC, OGG
+          Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
         </p>
       </div>
 
@@ -84,7 +97,7 @@ export default function FileUpload({ onTranscriptionComplete }: FileUploadProps)
         <div className="mt-4 space-y-2">
           <div className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm text-gray-600">Processing audio...</span>
+            <span className="text-sm text-gray-600">Обработка аудио...</span>
           </div>
           <Progress value={progress} />
         </div>

@@ -25,7 +25,23 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "No audio file provided" });
       }
 
-      const result = await transcribeAudio(req.file.buffer);
+      let options = {
+        model: "enhanced",
+        smart_format: true,
+        punctuate: true,
+        numerals: true,
+        detect_language: true
+      };
+
+      try {
+        if (req.body.options) {
+          options = JSON.parse(req.body.options);
+        }
+      } catch (e) {
+        console.warn("Failed to parse transcription options, using defaults");
+      }
+
+      const result = await transcribeAudio(req.file.buffer, options);
       res.json(result);
     } catch (error: any) {
       console.error("Transcription error:", error);
