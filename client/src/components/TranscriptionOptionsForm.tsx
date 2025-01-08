@@ -31,23 +31,14 @@ export default function TranscriptionOptionsForm({ options, onChange }: Transcri
 
         <div className="flex items-center justify-between">
           <div>
-            <Label>Пунктуация</Label>
-            <p className="text-sm text-gray-500">Добавляет знаки препинания</p>
+            <Label>Диаризация</Label>
+            <p className="text-sm text-gray-500">
+              Определяет смену говорящих в диалоге
+            </p>
           </div>
           <Switch 
-            checked={options.punctuate}
-            onCheckedChange={(checked) => handleChange("punctuate", checked)}
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <Label>Преобразование чисел</Label>
-            <p className="text-sm text-gray-500">Конвертирует числа из цифр в текст</p>
-          </div>
-          <Switch 
-            checked={options.numerals}
-            onCheckedChange={(checked) => handleChange("numerals", checked)}
+            checked={options.diarize}
+            onCheckedChange={(checked) => handleChange("diarize", checked)}
           />
         </div>
       </div>

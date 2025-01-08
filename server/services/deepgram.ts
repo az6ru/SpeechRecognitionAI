@@ -12,8 +12,7 @@ const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
 
 interface TranscriptionOptions {
   smart_format?: boolean;
-  punctuate?: boolean;
-  numerals?: boolean;
+  diarize?: boolean;
 }
 
 interface TranscriptionResult {
@@ -29,8 +28,9 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
     const deepgramOptions = {
       model: process.env.DEEPGRAM_MODEL,
       smart_format: options.smart_format === true,
-      punctuate: options.punctuate ?? true,
-      numerals: options.numerals ?? true,
+      punctuate: true, // Всегда включено
+      numerals: true, // Всегда включено
+      diarize: options.diarize ?? false,
     };
 
     console.log('Request to Deepgram API with options:', JSON.stringify(deepgramOptions, null, 2));
@@ -116,6 +116,7 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
         smart_format: deepgramOptions.smart_format,
         punctuate: deepgramOptions.punctuate,
         numerals: deepgramOptions.numerals,
+        diarize: deepgramOptions.diarize
       },
       paragraphs_count: paragraphs.length
     });
