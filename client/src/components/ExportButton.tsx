@@ -33,7 +33,6 @@ export function ExportButton({ transcription }: ExportButtonProps) {
   const exportAsPDF = async () => {
     setIsExporting(true);
     try {
-      // Создаем HTML разметку для PDF
       let htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -42,32 +41,32 @@ export function ExportButton({ transcription }: ExportButtonProps) {
           <style>
             body { 
               font-family: Arial, sans-serif; 
-              padding: 20px;
+              padding: 15px;
               font-size: 10px;
-              line-height: 1.3;
+              line-height: 1.2;
             }
             h1 { 
               font-size: 16px; 
               text-align: center; 
-              margin-bottom: 20px;
+              margin-bottom: 15px;
               font-weight: bold;
             }
             .speaker { 
-              margin-bottom: 12px;
+              margin-bottom: 8px;
               page-break-inside: avoid;
             }
             .speaker-header { 
               font-weight: bold; 
-              margin-bottom: 6px;
+              margin-bottom: 4px;
               font-size: 11px;
             }
             .speaker-text { 
-              margin-left: 12px;
-              line-height: 1.3;
+              margin-left: 8px;
+              line-height: 1.2;
             }
             .paragraph { 
-              margin-bottom: 10px;
-              line-height: 1.3;
+              margin-bottom: 6px;
+              line-height: 1.2;
             }
           </style>
         </head>
@@ -95,7 +94,6 @@ export function ExportButton({ transcription }: ExportButtonProps) {
         </html>
       `;
 
-      // Конвертируем HTML в PDF через API endpoint
       const response = await fetch('/api/export-pdf', {
         method: 'POST',
         headers: {
