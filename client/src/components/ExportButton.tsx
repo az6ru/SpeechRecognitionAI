@@ -34,17 +34,21 @@ export function ExportButton({ transcription }: ExportButtonProps) {
   const exportAsPDF = async () => {
     setIsExporting(true);
     try {
+      // Создаем документ с поддержкой кириллицы
       const doc = new jsPDF({
         orientation: "p",
         unit: "pt",
         format: "a4",
         putOnlyUsedFonts: true,
-        compress: true
+        compress: true,
+        hotfixes: ["px_scaling"]
       });
 
-      // Загружаем встроенный шрифт для поддержки кириллицы
-      doc.setFont("times", "normal");
-      doc.setLanguage("ru");
+      // Добавляем стандартный шрифт с поддержкой кириллицы
+      doc.addFileToVFS('times.ttf', 'times');
+      doc.addFont('times.ttf', 'times', 'normal');
+      doc.setFont('times', 'normal');
+      doc.setR2L(false);
 
       // Заголовок
       doc.setFontSize(24);
@@ -61,43 +65,46 @@ export function ExportButton({ transcription }: ExportButtonProps) {
       const lineHeight = 20;
       const maxWidth = pageWidth - 2 * margin;
 
-      // Добавляем текст построчно с правильным форматированием
       if (transcription.speakers && transcription.speakers.length > 0) {
-        transcription.speakers.forEach((speaker: Speaker) => {
+        for (const speaker of transcription.speakers) {
           // Заголовок спикера
           const speakerHeader = `Спикер ${speaker.speaker + 1}:`;
-          doc.setFont("times", "bold");
+          doc.setFontSize(14);
           doc.text(speakerHeader, margin, y);
-          y += lineHeight;
+          y += lineHeight * 1.5;
 
           // Текст спикера
-          doc.setFont("times", "normal");
-          const lines = doc.splitTextToSize(speaker.text, maxWidth - 20);
-          lines.forEach(line => {
+          doc.setFontSize(12);
+          const textLines = doc.splitTextToSize(speaker.text, maxWidth - 20);
+
+          for (const line of textLines) {
             if (y > doc.internal.pageSize.height - margin) {
               doc.addPage();
               y = margin;
             }
             doc.text(line, margin + 20, y);
             y += lineHeight;
-          });
+          }
           y += lineHeight; // Дополнительный отступ между спикерами
-        });
+        }
       } else {
         const paragraphs = transcription.paragraphs || [transcription.transcript];
-        paragraphs.forEach(paragraph => {
-          if (!paragraph.trim()) return;
-          const lines = doc.splitTextToSize(paragraph, maxWidth);
-          lines.forEach(line => {
+
+        for (const paragraph of paragraphs) {
+          if (!paragraph.trim()) continue;
+
+          const textLines = doc.splitTextToSize(paragraph, maxWidth);
+
+          for (const line of textLines) {
             if (y > doc.internal.pageSize.height - margin) {
               doc.addPage();
               y = margin;
             }
             doc.text(line, margin, y);
             y += lineHeight;
-          });
+          }
           y += lineHeight / 2; // Отступ между абзацами
-        });
+        }
       }
 
       doc.save("transcription.pdf");
