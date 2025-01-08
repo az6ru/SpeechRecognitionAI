@@ -44,20 +44,11 @@ export function ExportButton({ transcription }: ExportButtonProps) {
         hotfixes: ["px_scaling"]
       });
 
-      // Добавляем стандартный шрифт с поддержкой кириллицы
-      doc.addFileToVFS('times.ttf', 'times');
-      doc.addFont('times.ttf', 'times', 'normal');
-      doc.setFont('times', 'normal');
-      doc.setR2L(false);
-
       // Заголовок
       doc.setFontSize(24);
       const title = "Транскрипция";
       const pageWidth = doc.internal.pageSize.width;
-      const titleWidth = doc.getStringUnitWidth(title) * doc.getFontSize();
-      const titleX = (pageWidth - titleWidth) / 2;
-
-      doc.text(title, titleX, 50);
+      doc.text(title, pageWidth / 2, 50, { align: "center" });
       doc.setFontSize(12);
 
       const margin = 40;
@@ -68,8 +59,8 @@ export function ExportButton({ transcription }: ExportButtonProps) {
       if (transcription.speakers && transcription.speakers.length > 0) {
         for (const speaker of transcription.speakers) {
           // Заголовок спикера
-          const speakerHeader = `Спикер ${speaker.speaker + 1}:`;
           doc.setFontSize(14);
+          const speakerHeader = `Спикер ${speaker.speaker + 1}:`;
           doc.text(speakerHeader, margin, y);
           y += lineHeight * 1.5;
 
