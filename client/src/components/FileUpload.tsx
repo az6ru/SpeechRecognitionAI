@@ -22,23 +22,48 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [options, setOptions] = useState<TranscriptionOptions>(DEFAULT_OPTIONS);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
+  const [isLoadingDuration, setIsLoadingDuration] = useState(false);
   const { toast } = useToast();
 
   const calculateCost = (duration: number) => {
     return Math.ceil(duration / 60); // 1 рубль за минуту
   };
 
-  const handleFileSelection = (file: File) => {
-    const audio = new Audio();
-    const url = URL.createObjectURL(file);
+  const handleFileSelection = async (file: File) => {
+    setIsLoadingDuration(true);
+    setAudioDuration(null);
 
-    audio.addEventListener('loadedmetadata', () => {
-      setAudioDuration(audio.duration);
-      URL.revokeObjectURL(url);
-    });
+    try {
+      // Create a blob URL for the audio file
+      const url = URL.createObjectURL(file);
 
-    audio.src = url;
-    setSelectedFile(file);
+      // Create a new promise to handle audio loading
+      const duration = await new Promise<number>((resolve, reject) => {
+        const audio = new Audio();
+
+        audio.addEventListener('loadedmetadata', () => {
+          resolve(audio.duration);
+        });
+
+        audio.addEventListener('error', (e) => {
+          reject(new Error(`Failed to load audio file: ${e.currentTarget.error?.message || 'Unknown error'}`));
+        });
+
+        audio.src = url;
+      });
+
+      setAudioDuration(duration);
+      setSelectedFile(file);
+    } catch (error) {
+      console.error('Error loading audio file:', error);
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Не удалось определить длительность аудио файла"
+      });
+    } finally {
+      setIsLoadingDuration(false);
+    }
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -121,7 +146,14 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
           <AudioPlayer file={selectedFile} />
 
-          {audioDuration && (
+          {isLoadingDuration ? (
+            <div className="flex items-center space-x-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <p className="text-sm text-gray-600">
+                Определение длительности...
+              </p>
+            </div>
+          ) : audioDuration ? (
             <div className="space-y-2">
               <p className="text-sm text-gray-600">
                 Длительность: {Math.round(audioDuration)} секунд
@@ -130,11 +162,11 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
                 Стоимость: {calculateCost(audioDuration)} руб.
               </p>
             </div>
-          )}
+          ) : null}
 
           <Button
             onClick={handleTranscribe}
-            disabled={isUploading}
+            disabled={isUploading || isLoadingDuration}
             className="w-full"
           >
             {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}

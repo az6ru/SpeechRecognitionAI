@@ -3,6 +3,12 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import { transcribeAudio } from "./services/deepgram.js";
 import pdf from 'html-pdf';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -88,7 +94,9 @@ export function registerRoutes(app: Express): Server {
         },
         encoding: 'UTF-8',
         timeout: 30000,
-        phantomPath: process.env.NODE_ENV === 'production' ? '/usr/bin/phantomjs' : undefined,
+        phantomPath: process.env.NODE_ENV === 'production' 
+          ? path.join(__dirname, '..', 'node_modules', 'phantomjs-prebuilt', 'bin', 'phantomjs')
+          : undefined,
       };
 
       // Add error handling for PDF generation
