@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
-import { transcribeAudio } from "./services/deepgram";
+import { transcribeAudio } from "./services/deepgram.js";
 import pdf from 'html-pdf';
 
 const upload = multer({
@@ -19,6 +19,14 @@ const upload = multer({
 });
 
 export function registerRoutes(app: Express): Server {
+  // Обработка ошибок для production
+  const handleError = (error: any, res: any) => {
+    console.error("Operation error:", error);
+    const isProd = process.env.NODE_ENV === 'production';
+    const message = isProd ? 'Internal Server Error' : error.message;
+    res.status(500).json({ error: message });
+  };
+
   app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
     try {
       if (!req.file) {
@@ -52,14 +60,11 @@ export function registerRoutes(app: Express): Server {
       const result = await transcribeAudio(req.file.buffer, options);
       res.json(result);
     } catch (error: any) {
-      console.error("Transcription error:", error);
-      res.status(500).json({
-        error: error.message || "Failed to transcribe audio",
-      });
+      handleError(error, res);
     }
   });
 
-  // Эндпоинт для конвертации HTML в PDF
+  // Оптимизированная конфигурация для PDF экспорта
   app.post("/api/export-pdf", async (req, res) => {
     try {
       const { html } = req.body;
@@ -70,33 +75,34 @@ export function registerRoutes(app: Express): Server {
       const options = {
         format: 'A4',
         border: {
-          top: "20px",    // Уменьшили с 40px
-          right: "20px",  // Уменьшили с 40px
-          bottom: "20px", // Уменьшили с 40px
-          left: "20px"    // Уменьшили с 40px
+          top: "20px",
+          right: "20px",
+          bottom: "20px",
+          left: "20px"
         },
         header: {
-          height: "15mm"  // Уменьшили с 45mm
+          height: "15mm"
         },
         footer: {
-          height: "10mm"  // Уменьшили с 28mm
+          height: "10mm"
         },
-        encoding: 'UTF-8'
+        encoding: 'UTF-8',
+        timeout: 30000, // Увеличенный timeout для больших документов
       };
 
       pdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {
-          console.error("PDF generation error:", err);
-          return res.status(500).json({ error: "Failed to generate PDF" });
+          return handleError(err, res);
         }
 
+        // Настройка кэширования для PDF
+        res.setHeader('Cache-Control', 'public, max-age=60'); // 1 минута кэширования
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename=transcription.pdf');
         res.send(buffer);
       });
     } catch (error) {
-      console.error("PDF export error:", error);
-      res.status(500).json({ error: "Failed to generate PDF" });
+      handleError(error, res);
     }
   });
 

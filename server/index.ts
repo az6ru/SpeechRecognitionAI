@@ -7,19 +7,25 @@ import { setupVite, serveStatic, log } from "./vite.js";
 
 const app = express();
 
-// Enable trust proxy for correct IP detection behind reverse proxy
-app.set('trust proxy', 1);
+// Enable trust proxy for all proxies
+// This is safe as we're running behind Coolify's proxy
+app.set('trust proxy', true);
 
-// Security headers
-app.use(helmet());
+// Security headers with correct proxy settings
+app.use(helmet({
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+}));
 
 // Compression
 app.use(compression());
 
-// Rate limiting
+// Rate limiting with proxy support
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  trustProxy: true // Trust the X-Forwarded-For header
 });
 app.use(limiter);
 
@@ -84,9 +90,7 @@ app.use((req, res, next) => {
 
   // Server configuration
   const PORT = process.env.PORT || 5000;
-  const HOST = process.env.HOST || '0.0.0.0'; //Retained HOST from original code
-
-  server.listen(PORT, HOST, () => { //Retained HOST from original code
-    log(`Server running in ${app.get('env')} mode on ${HOST}:${PORT}`); //Retained HOST from original code
+  server.listen(PORT, "0.0.0.0", () => {
+    log(`Server running in ${app.get('env')} mode on port ${PORT}`);
   });
 })();
