@@ -40,29 +40,38 @@ export function ExportButton({ transcription }: ExportButtonProps) {
         format: "a4"
       });
 
-      // Загружаем шрифт Times New Roman для поддержки кириллицы
-      doc.setFont("times", "normal");
-      doc.setFontSize(16);
+      // Установка шрифта для поддержки кириллицы
+      doc.setFont("Helvetica");
+      doc.setLanguage("ru");
 
+      // Заголовок
+      doc.setFontSize(16);
       const title = "Транскрипция";
-      const titleWidth = doc.getStringUnitWidth(title) * doc.getFontSize();
       const pageWidth = doc.internal.pageSize.getWidth();
+      const titleWidth = doc.getStringUnitWidth(title) * doc.getFontSize();
       const titleX = (pageWidth - titleWidth) / 2;
 
+      // Добавляем заголовок
       doc.text(title, titleX, 40);
 
+      // Основной текст
       doc.setFontSize(12);
-      const formattedText = formatTextWithSpeakers();
-      const lines = doc.splitTextToSize(formattedText, pageWidth - 80);
+      const textContent = formatTextWithSpeakers();
+      const margin = 40;
+      const maxWidth = pageWidth - 2 * margin;
+      const lines = doc.splitTextToSize(textContent, maxWidth);
 
       let y = 80;
+      const lineHeight = 20;
+
+      // Добавляем текст построчно
       lines.forEach((line: string) => {
-        if (y > doc.internal.pageSize.getHeight() - 40) {
+        if (y > doc.internal.pageSize.getHeight() - margin) {
           doc.addPage();
-          y = 40;
+          y = margin;
         }
-        doc.text(line, 40, y);
-        y += 20;
+        doc.text(line, margin, y);
+        y += lineHeight;
       });
 
       doc.save("transcription.pdf");
@@ -88,9 +97,10 @@ export function ExportButton({ transcription }: ExportButtonProps) {
                   size: 32,
                 }),
               ],
-            }),
-            new Paragraph({
-              children: [new TextRun("")],
+              spacing: {
+                after: 400,
+                line: 360,
+              },
             }),
             ...(transcription.speakers?.map((speaker) => [
               new Paragraph({
@@ -101,6 +111,11 @@ export function ExportButton({ transcription }: ExportButtonProps) {
                     size: 24,
                   }),
                 ],
+                spacing: {
+                  before: 400,
+                  after: 200,
+                  line: 360,
+                },
               }),
               new Paragraph({
                 children: [
@@ -109,11 +124,26 @@ export function ExportButton({ transcription }: ExportButtonProps) {
                     size: 24,
                   }),
                 ],
+                spacing: {
+                  after: 200,
+                  line: 360,
+                },
               }),
+            ]).flat() || transcription.paragraphs?.map((para) => 
               new Paragraph({
-                children: [new TextRun("")],
-              }),
-            ]).flat() || [
+                children: [
+                  new TextRun({
+                    text: para,
+                    size: 24,
+                  }),
+                ],
+                spacing: {
+                  before: 200,
+                  after: 200,
+                  line: 360,
+                },
+              })
+            ) || [
               new Paragraph({
                 children: [
                   new TextRun({
@@ -121,6 +151,9 @@ export function ExportButton({ transcription }: ExportButtonProps) {
                     size: 24,
                   }),
                 ],
+                spacing: {
+                  line: 360,
+                },
               }),
             ]),
           ],
