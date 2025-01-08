@@ -9,6 +9,9 @@ const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
 interface TranscriptionOptions {
   smart_format?: boolean;
   diarize?: boolean;
+  model?: string;
+  language?: string;
+  detect_language?: boolean;
 }
 
 interface TranscriptionResult {
@@ -17,6 +20,7 @@ interface TranscriptionResult {
   detected_language?: string;
   duration?: number;
   paragraphs?: string[];
+  speakers?: { speaker: number; text: string }[];
 }
 
 export async function transcribeAudio(audioBuffer: Buffer, options: TranscriptionOptions): Promise<TranscriptionResult> {
@@ -25,9 +29,10 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       smart_format: options.smart_format === true,
       punctuate: true,
       numerals: true,
-      diarize: options.diarize ?? false,
-      language: 'ru', // добавляем поддержку русского языка
-      model: 'general' // используем базовую модель, доступную по умолчанию
+      diarize: options.diarize === true,
+      model: options.model || 'nova-2',
+      language: options.language || 'ru',
+      detect_language: options.detect_language ?? true
     };
 
     console.log('Request to Deepgram API with options:', JSON.stringify(deepgramOptions, null, 2));
@@ -56,38 +61,31 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
     const duration = result.metadata?.duration;
 
     let paragraphs: string[] = [];
+    let speakers: { speaker: number; text: string }[] = [];
 
-    if (options.smart_format && alternative.words) {
-      let currentParagraph: string[] = [];
-      let lastWordEnd = 0;
-      const MIN_PAUSE_FOR_PARAGRAPH = 1.5;
-      const MIN_WORDS_IN_PARAGRAPH = 10;
-
-      alternative.words.forEach((word: any, index: number) => {
-        const pause = word.start - lastWordEnd;
-        const wordText = word.punctuated_word || word.word;
-        const isEndOfSentence = /[.!?]$/.test(wordText);
-        const isLongPause = pause > MIN_PAUSE_FOR_PARAGRAPH;
-        const isLastWord = index === alternative.words.length - 1;
-
-        currentParagraph.push(wordText);
-
-        if (
-          currentParagraph.length >= MIN_WORDS_IN_PARAGRAPH && 
-          (isEndOfSentence && isLongPause || isLastWord)
-        ) {
-          paragraphs.push(currentParagraph.join(' '));
-          currentParagraph = [];
+    // Обработка диаризации, если включена
+    if (options.diarize && alternative.paragraphs) {
+      // Группировка по спикерам
+      alternative.paragraphs.forEach((para: any) => {
+        if (para.speaker !== undefined && para.sentences) {
+          const speakerText = para.sentences
+            .map((sentence: any) => sentence.text)
+            .join(' ');
+          speakers.push({
+            speaker: para.speaker,
+            text: speakerText
+          });
         }
-
-        lastWordEnd = word.end;
       });
+    }
 
-      if (currentParagraph.length > 0) {
-        paragraphs.push(currentParagraph.join(' '));
-      }
-
-      console.log('Created paragraphs:', paragraphs.length);
+    // Обработка умного форматирования
+    if (options.smart_format && alternative.paragraphs) {
+      paragraphs = alternative.paragraphs.map((para: any) => {
+        return para.sentences
+          .map((sentence: any) => sentence.text)
+          .join(' ');
+      });
     } else {
       paragraphs = [transcript];
     }
@@ -97,7 +95,8 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       confidence,
       detected_language,
       duration,
-      paragraphs
+      paragraphs,
+      ...(speakers.length > 0 && { speakers })
     };
 
     console.log('Final transcription result:', {
@@ -105,7 +104,8 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       confidence,
       detected_language,
       duration,
-      paragraphs_count: paragraphs.length
+      paragraphs_count: paragraphs.length,
+      speakers_count: speakers.length
     });
 
     return transcriptionResult;

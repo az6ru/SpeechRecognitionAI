@@ -1,6 +1,9 @@
 export interface TranscriptionOptions {
   smart_format?: boolean;
   diarize?: boolean;
+  model?: string;
+  language?: string;
+  detect_language?: boolean;
 }
 
 export interface TranscriptionResponse {
@@ -9,6 +12,7 @@ export interface TranscriptionResponse {
   detected_language?: string;
   duration?: number;
   paragraphs?: string[];
+  speakers?: { speaker: number; text: string }[];
 }
 
 export const AVAILABLE_MODELS = [

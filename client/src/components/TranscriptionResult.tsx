@@ -29,7 +29,20 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
   return (
     <div className="space-y-4">
       <div className="bg-gray-50 rounded-lg p-4">
-        {transcription.paragraphs && transcription.paragraphs.length > 0 ? (
+        {transcription.speakers && transcription.speakers.length > 0 ? (
+          // Отображаем текст с разделением по спикерам
+          <div className="space-y-6">
+            {transcription.speakers.map((speaker, index) => (
+              <div key={index} className="border-l-4 border-primary pl-4">
+                <p className="font-semibold text-sm text-primary mb-2">
+                  Спикер {speaker.speaker + 1}
+                </p>
+                <p className="text-gray-700">{speaker.text}</p>
+              </div>
+            ))}
+          </div>
+        ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
+          // Отображаем форматированный текст по абзацам
           <div className="space-y-4">
             {transcription.paragraphs.map((paragraph: string, index: number) => (
               <p key={index} className="text-gray-700">
@@ -38,6 +51,7 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
             ))}
           </div>
         ) : (
+          // Отображаем весь текст как есть
           <p className="text-gray-700 whitespace-pre-wrap">
             {transcription.transcript}
           </p>
