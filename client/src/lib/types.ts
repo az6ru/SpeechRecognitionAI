@@ -1,11 +1,7 @@
 export interface TranscriptionOptions {
-  model: string;
-  language?: string;
-  detect_language?: boolean;
   smart_format?: boolean;
   punctuate?: boolean;
   numerals?: boolean;
-  diarize?: boolean;
 }
 
 export interface TranscriptionResponse {
@@ -13,8 +9,7 @@ export interface TranscriptionResponse {
   confidence?: number;
   detected_language?: string;
   duration?: number;
-  error?: string;
-  paragraphs?: string[]; // Добавляем поддержку абзацев
+  paragraphs?: string[];
 }
 
 export const AVAILABLE_MODELS = [

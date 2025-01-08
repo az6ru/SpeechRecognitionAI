@@ -1,20 +1,19 @@
 import { createClient } from "@deepgram/sdk";
-import type { PrerecordedTranscriptionResponse } from "@deepgram/sdk/dist/types";
 
 if (!process.env.DEEPGRAM_API_KEY) {
   throw new Error("DEEPGRAM_API_KEY environment variable is required");
 }
 
+if (!process.env.DEEPGRAM_MODEL) {
+  throw new Error("DEEPGRAM_MODEL environment variable is required");
+}
+
 const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
 
 interface TranscriptionOptions {
-  model: string;
-  language?: string;
-  detect_language?: boolean;
   smart_format?: boolean;
   punctuate?: boolean;
   numerals?: boolean;
-  diarize?: boolean;
 }
 
 interface TranscriptionResult {
@@ -28,18 +27,11 @@ interface TranscriptionResult {
 export async function transcribeAudio(audioBuffer: Buffer, options: TranscriptionOptions): Promise<TranscriptionResult> {
   try {
     const deepgramOptions = {
-      model: options.model,
+      model: process.env.DEEPGRAM_MODEL,
       smart_format: options.smart_format === true,
       punctuate: options.punctuate ?? true,
       numerals: options.numerals ?? true,
-      detect_language: options.detect_language ?? true,
-      diarize: options.diarize ?? false,
     };
-
-    if (options.language && options.language !== 'auto') {
-      deepgramOptions.detect_language = false;
-      deepgramOptions.language = options.language;
-    }
 
     console.log('Request to Deepgram API with options:', JSON.stringify(deepgramOptions, null, 2));
 
@@ -124,7 +116,6 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
         smart_format: deepgramOptions.smart_format,
         punctuate: deepgramOptions.punctuate,
         numerals: deepgramOptions.numerals,
-        diarize: deepgramOptions.diarize
       },
       paragraphs_count: paragraphs.length
     });

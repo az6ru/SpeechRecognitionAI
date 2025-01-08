@@ -6,18 +6,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { TranscriptionResponse, TranscriptionOptions } from "../lib/types";
 import TranscriptionOptionsForm from "@/components/TranscriptionOptionsForm";
+import AudioPlayer from "@/components/AudioPlayer";
 
 interface FileUploadProps {
   onTranscriptionComplete: (result: TranscriptionResponse) => void;
 }
 
 const DEFAULT_OPTIONS: TranscriptionOptions = {
-  model: "nova-2",
-  smart_format: false, // По умолчанию выключено
+  smart_format: true,
   punctuate: true,
-  numerals: true,
-  detect_language: true,
-  diarize: false
+  numerals: true
 };
 
 export default function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
@@ -119,21 +117,29 @@ export default function FileUpload({ onTranscriptionComplete }: FileUploadProps)
         </p>
       </div>
 
-      {selectedFile && audioDuration && (
-        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+      {selectedFile && (
+        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
           <p className="text-sm text-gray-600">
             Выбранный файл: {selectedFile.name}
           </p>
-          <p className="text-sm text-gray-600">
-            Длительность: {Math.round(audioDuration)} секунд
-          </p>
-          <p className="text-sm text-gray-600">
-            Стоимость: {calculateCost(audioDuration)} руб.
-          </p>
+
+          <AudioPlayer file={selectedFile} />
+
+          {audioDuration && (
+            <div className="space-y-2">
+              <p className="text-sm text-gray-600">
+                Длительность: {Math.round(audioDuration)} секунд
+              </p>
+              <p className="text-sm text-gray-600">
+                Стоимость: {calculateCost(audioDuration)} руб.
+              </p>
+            </div>
+          )}
+
           <Button
             onClick={handleTranscribe}
             disabled={isUploading}
-            className="w-full mt-2"
+            className="w-full"
           >
             {isUploading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
