@@ -40,12 +40,35 @@ export function ExportButton({ transcription }: ExportButtonProps) {
         <head>
           <meta charset="UTF-8">
           <style>
-            body { font-family: Arial, sans-serif; padding: 40px; }
-            h1 { font-size: 24px; text-align: center; margin-bottom: 30px; }
-            .speaker { margin-bottom: 20px; }
-            .speaker-header { font-weight: bold; margin-bottom: 10px; }
-            .speaker-text { margin-left: 20px; line-height: 1.5; }
-            .paragraph { margin-bottom: 15px; line-height: 1.5; }
+            body { 
+              font-family: Arial, sans-serif; 
+              padding: 30px;
+              font-size: 12px;
+              line-height: 1.4;
+            }
+            h1 { 
+              font-size: 20px; 
+              text-align: center; 
+              margin-bottom: 25px;
+              font-weight: bold;
+            }
+            .speaker { 
+              margin-bottom: 15px;
+              page-break-inside: avoid;
+            }
+            .speaker-header { 
+              font-weight: bold; 
+              margin-bottom: 8px;
+              font-size: 13px;
+            }
+            .speaker-text { 
+              margin-left: 15px;
+              line-height: 1.4;
+            }
+            .paragraph { 
+              margin-bottom: 12px;
+              line-height: 1.4;
+            }
           </style>
         </head>
         <body>
