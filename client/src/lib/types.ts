@@ -11,6 +11,7 @@ export interface TranscriptionResponse {
   transcript: string;
   confidence?: number;
   detected_language?: string;
+  duration?: number;
   error?: string;
 }
 

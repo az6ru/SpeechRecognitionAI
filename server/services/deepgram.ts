@@ -16,23 +16,25 @@ interface TranscriptionOptions {
   numerals?: boolean;
 }
 
-export async function transcribeAudio(audioBuffer: Buffer, options: TranscriptionOptions) {
+interface TranscriptionResult {
+  transcript: string;
+  confidence?: number;
+  detected_language?: string;
+  duration?: number;
+}
+
+export async function transcribeAudio(audioBuffer: Buffer, options: TranscriptionOptions): Promise<TranscriptionResult> {
   try {
-    // Преобразуем опции в формат, который ожидает Deepgram API
-    const deepgramOptions: any = {
+    const deepgramOptions = {
       model: options.model,
       smart_format: options.smart_format,
       punctuate: options.punctuate,
       numerals: options.numerals,
     };
 
-    // Добавляем language только если он указан явно
     if (options.language && options.language !== 'auto') {
       deepgramOptions.language = options.language;
-    }
-
-    // Добавляем detect_language только если язык не указан явно
-    if (!options.language || options.language === 'auto') {
+    } else {
       deepgramOptions.detect_language = true;
     }
 
@@ -47,10 +49,13 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       throw new Error(error.message);
     }
 
+    const duration = result.metadata?.duration;
+
     return {
       transcript: result.results?.channels[0]?.alternatives[0]?.transcript || "",
       confidence: result.results?.channels[0]?.alternatives[0]?.confidence,
       detected_language: result.results?.channels[0]?.detected_language,
+      duration,
     };
   } catch (error) {
     console.error("Deepgram API error:", error);

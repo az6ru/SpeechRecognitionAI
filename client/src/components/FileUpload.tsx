@@ -3,6 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { Upload, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import { TranscriptionResponse, TranscriptionOptions } from "../lib/types";
 import TranscriptionOptionsForm from "@/components/TranscriptionOptionsForm";
 
@@ -22,17 +23,41 @@ export default function FileUpload({ onTranscriptionComplete }: FileUploadProps)
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [options, setOptions] = useState<TranscriptionOptions>(DEFAULT_OPTIONS);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const { toast } = useToast();
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  const calculateCost = (duration: number) => {
+    return Math.ceil(duration / 60); // 1 рубль за минуту
+  };
+
+  const handleFileSelection = (file: File) => {
+    const audio = new Audio();
+    const url = URL.createObjectURL(file);
+
+    audio.addEventListener('loadedmetadata', () => {
+      setAudioDuration(audio.duration);
+      URL.revokeObjectURL(url);
+    });
+
+    audio.src = url;
+    setSelectedFile(file);
+  };
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
+    handleFileSelection(file);
+  }, []);
+
+  const handleTranscribe = async () => {
+    if (!selectedFile) return;
 
     setIsUploading(true);
     setProgress(0);
 
     const formData = new FormData();
-    formData.append("audio", file);
+    formData.append("audio", selectedFile);
     formData.append("options", JSON.stringify(options));
 
     try {
@@ -61,7 +86,7 @@ export default function FileUpload({ onTranscriptionComplete }: FileUploadProps)
       setIsUploading(false);
       setProgress(0);
     }
-  }, [onTranscriptionComplete, toast, options]);
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -93,13 +118,36 @@ export default function FileUpload({ onTranscriptionComplete }: FileUploadProps)
         </p>
       </div>
 
+      {selectedFile && audioDuration && (
+        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+          <p className="text-sm text-gray-600">
+            Выбранный файл: {selectedFile.name}
+          </p>
+          <p className="text-sm text-gray-600">
+            Длительность: {Math.round(audioDuration)} секунд
+          </p>
+          <p className="text-sm text-gray-600">
+            Стоимость: {calculateCost(audioDuration)} руб.
+          </p>
+          <Button
+            onClick={handleTranscribe}
+            disabled={isUploading}
+            className="w-full mt-2"
+          >
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
+            {isUploading ? "Обработка..." : "Транскрибировать"}
+          </Button>
+        </div>
+      )}
+
       {isUploading && (
-        <div className="mt-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm text-gray-600">Обработка аудио...</span>
-          </div>
+        <div className="space-y-2">
           <Progress value={progress} />
+          <p className="text-sm text-gray-600 text-center">
+            Обработка аудио...
+          </p>
         </div>
       )}
     </div>
