@@ -19,7 +19,7 @@ export default function TranscriptionResult({ transcription }: TranscriptionResu
   return (
     <div className="space-y-4">
       <div className="bg-gray-50 rounded-lg p-4">
-        {transcription.paragraphs ? (
+        {transcription.paragraphs && transcription.paragraphs.length > 0 ? (
           // Если есть абзацы, отображаем их с отступами
           <div className="space-y-4">
             {transcription.paragraphs.map((paragraph, index) => (
@@ -46,12 +46,12 @@ export default function TranscriptionResult({ transcription }: TranscriptionResu
           {copied ? (
             <>
               <CheckCircle className="h-4 w-4" />
-              Copied!
+              Скопировано
             </>
           ) : (
             <>
               <Copy className="h-4 w-4" />
-              Copy text
+              Копировать текст
             </>
           )}
         </Button>

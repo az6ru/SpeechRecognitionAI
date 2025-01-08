@@ -66,7 +66,14 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
     let paragraphs: string[] | undefined;
     if (options.smart_format) {
       const paragraphsData = result.results?.channels[0]?.alternatives[0]?.paragraphs?.paragraphs;
-      paragraphs = paragraphsData?.map(p => p.text) || undefined;
+      if (paragraphsData && Array.isArray(paragraphsData)) {
+        paragraphs = paragraphsData.map(p => p.text);
+        console.log('Extracted paragraphs:', paragraphs);
+      } else {
+        console.log('No paragraphs found in response:', paragraphsData);
+        // Если абзацы не найдены, разбиваем текст по точкам
+        paragraphs = transcript.split(/(?<=[.!?])\s+/);
+      }
     }
 
     // Логируем обработанный результат
