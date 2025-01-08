@@ -21,9 +21,12 @@ export function ExportButton({ transcription }: ExportButtonProps) {
 
   const formatTextWithSpeakers = () => {
     if (transcription.speakers && transcription.speakers.length > 0) {
-      return transcription.speakers.map((speaker, idx) => 
-        `Спикер ${speaker.speaker + 1}:\n${speaker.text}\n`
-      ).join('\n');
+      return transcription.speakers
+        .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}\n`)
+        .join('\n');
+    }
+    if (transcription.paragraphs && transcription.paragraphs.length > 0) {
+      return transcription.paragraphs.join('\n\n');
     }
     return transcription.transcript;
   };
@@ -31,25 +34,35 @@ export function ExportButton({ transcription }: ExportButtonProps) {
   const exportAsPDF = async () => {
     setIsExporting(true);
     try {
-      const doc = new jsPDF();
+      const doc = new jsPDF({
+        orientation: "p",
+        unit: "pt",
+        format: "a4"
+      });
 
-      // Add custom font for Cyrillic support
-      doc.setFont("helvetica");
+      // Загружаем шрифт Times New Roman для поддержки кириллицы
+      doc.setFont("times", "normal");
       doc.setFontSize(16);
-      doc.text("Транскрипция", 20, 20);
+
+      const title = "Транскрипция";
+      const titleWidth = doc.getStringUnitWidth(title) * doc.getFontSize();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const titleX = (pageWidth - titleWidth) / 2;
+
+      doc.text(title, titleX, 40);
 
       doc.setFontSize(12);
       const formattedText = formatTextWithSpeakers();
-      const splitText = doc.splitTextToSize(formattedText, 170);
+      const lines = doc.splitTextToSize(formattedText, pageWidth - 80);
 
-      let y = 40;
-      splitText.forEach((line: string) => {
-        if (y > 280) {
+      let y = 80;
+      lines.forEach((line: string) => {
+        if (y > doc.internal.pageSize.getHeight() - 40) {
           doc.addPage();
-          y = 20;
+          y = 40;
         }
-        doc.text(line, 20, y);
-        y += 7;
+        doc.text(line, 40, y);
+        y += 20;
       });
 
       doc.save("transcription.pdf");

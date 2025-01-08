@@ -19,8 +19,20 @@ const SPEAKER_COLORS = [
 export function TranscriptionResult({ transcription }: TranscriptionResultProps) {
   const [copied, setCopied] = useState(false);
 
+  const formatText = () => {
+    if (transcription.speakers && transcription.speakers.length > 0) {
+      return transcription.speakers
+        .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}\n`)
+        .join('\n');
+    }
+    if (transcription.paragraphs && transcription.paragraphs.length > 0) {
+      return transcription.paragraphs.join('\n\n');
+    }
+    return transcription.transcript;
+  };
+
   const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(transcription.transcript);
+    await navigator.clipboard.writeText(formatText());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
