@@ -29,20 +29,18 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
   try {
     const deepgramOptions = {
       model: options.model,
-      smart_format: options.smart_format === true, // Явно преобразуем в boolean
+      smart_format: options.smart_format === true,
       punctuate: options.punctuate ?? true,
       numerals: options.numerals ?? true,
       detect_language: options.detect_language ?? true,
       diarize: options.diarize ?? false,
     };
 
-    // Если язык указан явно и это не auto, добавляем его в параметры
     if (options.language && options.language !== 'auto') {
       deepgramOptions.detect_language = false;
       deepgramOptions.language = options.language;
     }
 
-    // Логируем параметры запроса
     console.log('Request to Deepgram API with options:', JSON.stringify(deepgramOptions, null, 2));
 
     const { result } = await deepgram.listen.prerecorded.transcribeFile(
@@ -54,46 +52,56 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       throw new Error("Failed to get transcription result");
     }
 
-    // Логируем полный ответ от API для отладки
     console.log('Full Deepgram API response:', JSON.stringify(result, null, 2));
 
-    const transcript = result.results?.channels[0]?.alternatives[0]?.transcript || "";
-    const confidence = result.results?.channels[0]?.alternatives[0]?.confidence;
-    const detected_language = result.results?.channels[0]?.detected_language;
+    const channel = result.results?.channels[0];
+    const alternative = channel?.alternatives[0];
+
+    if (!alternative) {
+      throw new Error("No transcription alternative found");
+    }
+
+    const transcript = alternative.transcript || "";
+    const confidence = alternative.confidence;
+    const detected_language = channel?.detected_language;
     const duration = result.metadata?.duration;
 
-    // Извлекаем абзацы, если включено умное форматирование
-    let paragraphs: string[] | undefined;
-    if (options.smart_format) {
-      const paragraphsData = result.results?.channels[0]?.alternatives[0]?.paragraphs?.paragraphs;
-      if (paragraphsData && Array.isArray(paragraphsData)) {
-        paragraphs = paragraphsData.map(p => p.text);
-        console.log('Extracted paragraphs:', paragraphs);
-      } else {
-        console.log('No paragraphs found in response:', paragraphsData);
-        // Если абзацы не найдены, разбиваем по предложениям из структуры sentences
-        const sentences = result.results?.channels[0]?.alternatives[0]?.paragraphs?.sentences;
-        if (sentences && Array.isArray(sentences)) {
-          // Группируем предложения в параграфы по 3-5 предложений
-          paragraphs = [];
-          let currentParagraph: string[] = [];
+    // Извлекаем абзацы из слов с учетом пауз и пунктуации
+    let paragraphs: string[] = [];
 
-          sentences.forEach((sentence: any, index: number) => {
-            currentParagraph.push(sentence.text);
+    if (options.smart_format && alternative.words) {
+      let currentParagraph: string[] = [];
+      let lastWordEnd = 0;
 
-            // Создаем новый параграф каждые 3-5 предложений или если это последнее предложение
-            if (currentParagraph.length >= 3 || index === sentences.length - 1) {
-              paragraphs!.push(currentParagraph.join(' '));
-              currentParagraph = [];
-            }
-          });
+      alternative.words.forEach((word: any, index: number) => {
+        // Проверяем паузу между словами (больше 1 секунды считаем новым параграфом)
+        const pause = word.start - lastWordEnd;
+        const isLongPause = pause > 1;
 
-          console.log('Created paragraphs from sentences:', paragraphs);
-        } else {
-          // Если нет ни параграфов, ни предложений, разбиваем по знакам препинания
-          paragraphs = transcript.split(/(?<=[.!?])\s+/).filter(p => p.trim());
+        // Используем punctuated_word для сохранения пунктуации
+        const wordText = word.punctuated_word || word.word;
+
+        // Если длинная пауза или предыдущее слово заканчивается на знак конца предложения
+        if (isLongPause || (index > 0 && /[.!?]$/.test(currentParagraph[currentParagraph.length - 1]))) {
+          if (currentParagraph.length > 0) {
+            paragraphs.push(currentParagraph.join(' '));
+            currentParagraph = [];
+          }
         }
+
+        currentParagraph.push(wordText);
+        lastWordEnd = word.end;
+      });
+
+      // Добавляем последний параграф
+      if (currentParagraph.length > 0) {
+        paragraphs.push(currentParagraph.join(' '));
       }
+
+      console.log('Created paragraphs from words:', paragraphs);
+    } else {
+      // Если smart_format выключен, возвращаем весь текст как один параграф
+      paragraphs = [transcript];
     }
 
     // Логируем обработанный результат
@@ -110,7 +118,7 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
         numerals: deepgramOptions.numerals,
         diarize: deepgramOptions.diarize
       },
-      paragraphs_count: paragraphs?.length
+      paragraphs_count: paragraphs.length
     });
 
     return {
