@@ -24,7 +24,8 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "No audio file provided" });
       }
 
-      let options = {
+      // Базовые опции по умолчанию
+      const defaultOptions = {
         model: "nova-2",
         smart_format: true,
         punctuate: true,
@@ -32,19 +33,22 @@ export function registerRoutes(app: Express): Server {
         detect_language: true
       };
 
+      let options = { ...defaultOptions };
+
       try {
         if (req.body.options) {
           const parsedOptions = JSON.parse(req.body.options);
           options = {
-            ...options,
-            ...parsedOptions
+            ...defaultOptions,  // Сначала дефолтные значения
+            ...parsedOptions    // Затем пользовательские, которые перезапишут дефолтные
           };
         }
       } catch (e) {
-        console.warn("Failed to parse transcription options, using defaults:", e);
+        console.warn("Failed to parse transcription options:", e);
+        console.warn("Using default options");
       }
 
-      console.log('Processing request with options:', options);
+      console.log('Processing request with options:', JSON.stringify(options, null, 2));
       const result = await transcribeAudio(req.file.buffer, options);
       res.json(result);
     } catch (error: any) {
