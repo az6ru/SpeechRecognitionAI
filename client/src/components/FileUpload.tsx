@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, Loader2 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { TranscriptionResponse, TranscriptionOptions } from "@/lib/types";
@@ -20,7 +19,6 @@ const DEFAULT_OPTIONS: TranscriptionOptions = {
 
 export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [options, setOptions] = useState<TranscriptionOptions>(DEFAULT_OPTIONS);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
@@ -53,7 +51,6 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
     if (!selectedFile) return;
 
     setIsUploading(true);
-    setProgress(0);
 
     const formData = new FormData();
     formData.append("audio", selectedFile);
@@ -83,7 +80,6 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
       });
     } finally {
       setIsUploading(false);
-      setProgress(0);
     }
   };
 
@@ -141,20 +137,9 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
             disabled={isUploading}
             className="w-full"
           >
-            {isUploading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
+            {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             {isUploading ? "Обработка..." : "Транскрибировать"}
           </Button>
-        </div>
-      )}
-
-      {isUploading && (
-        <div className="space-y-2">
-          <Progress value={progress} />
-          <p className="text-sm text-gray-600 text-center">
-            Обработка аудио...
-          </p>
         </div>
       )}
     </div>
