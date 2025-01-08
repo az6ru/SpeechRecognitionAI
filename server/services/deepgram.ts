@@ -65,27 +65,49 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
 
     // Обработка диаризации, если включена
     if (options.diarize && alternative.paragraphs) {
-      // Группировка по спикерам
-      alternative.paragraphs.forEach((para: any) => {
-        if (para.speaker !== undefined && para.sentences) {
-          const speakerText = para.sentences
-            .map((sentence: any) => sentence.text)
-            .join(' ');
-          speakers.push({
-            speaker: para.speaker,
-            text: speakerText
-          });
-        }
-      });
+      try {
+        const paragraphGroups = Array.isArray(alternative.paragraphs) ? 
+          alternative.paragraphs : 
+          Object.values(alternative.paragraphs);
+
+        paragraphGroups.forEach((para: any) => {
+          if (para.speaker !== undefined && para.sentences) {
+            const speakerText = Array.isArray(para.sentences) ?
+              para.sentences.map((sentence: any) => sentence.text).join(' ') :
+              para.text || '';
+
+            speakers.push({
+              speaker: para.speaker,
+              text: speakerText
+            });
+          }
+        });
+
+        console.log('Processed speakers:', speakers);
+      } catch (error) {
+        console.error('Error processing speakers:', error);
+      }
     }
 
     // Обработка умного форматирования
     if (options.smart_format && alternative.paragraphs) {
-      paragraphs = alternative.paragraphs.map((para: any) => {
-        return para.sentences
-          .map((sentence: any) => sentence.text)
-          .join(' ');
-      });
+      try {
+        const paragraphGroups = Array.isArray(alternative.paragraphs) ? 
+          alternative.paragraphs : 
+          Object.values(alternative.paragraphs);
+
+        paragraphs = paragraphGroups.map((para: any) => {
+          if (Array.isArray(para.sentences)) {
+            return para.sentences.map((sentence: any) => sentence.text).join(' ');
+          }
+          return para.text || '';
+        });
+
+        console.log('Processed paragraphs:', paragraphs);
+      } catch (error) {
+        console.error('Error processing paragraphs:', error);
+        paragraphs = [transcript];
+      }
     } else {
       paragraphs = [transcript];
     }
