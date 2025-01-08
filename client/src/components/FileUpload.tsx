@@ -13,10 +13,11 @@ interface FileUploadProps {
 
 const DEFAULT_OPTIONS: TranscriptionOptions = {
   model: "nova-2",
-  smart_format: true,
+  smart_format: false, // По умолчанию выключено
   punctuate: true,
   numerals: true,
-  detect_language: true
+  detect_language: true,
+  diarize: false
 };
 
 export default function FileUpload({ onTranscriptionComplete }: FileUploadProps) {

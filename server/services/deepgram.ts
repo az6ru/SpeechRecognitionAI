@@ -28,7 +28,7 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
   try {
     const deepgramOptions = {
       model: options.model,
-      smart_format: options.smart_format ?? false,
+      smart_format: options.smart_format === true, // Явно преобразуем в boolean
       punctuate: options.punctuate ?? true,
       numerals: options.numerals ?? true,
       detect_language: options.detect_language ?? true,

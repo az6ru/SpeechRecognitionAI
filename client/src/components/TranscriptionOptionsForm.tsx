@@ -59,7 +59,9 @@ export default function TranscriptionOptionsForm({ options, onChange }: Transcri
           <div className="flex items-center justify-between">
             <div>
               <Label>Умное форматирование</Label>
-              <p className="text-sm text-gray-500">Улучшает читаемость, добавляя знаки препинания и форматирование</p>
+              <p className="text-sm text-gray-500">
+                Улучшает читаемость текста: добавляет абзацы, форматирует даты, время и числа
+              </p>
             </div>
             <Switch 
               checked={options.smart_format}
