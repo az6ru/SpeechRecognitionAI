@@ -39,7 +39,8 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       deepgramOptions.language = options.language;
     }
 
-    console.log('Deepgram API options:', JSON.stringify(deepgramOptions, null, 2));
+    // Логируем параметры запроса
+    console.log('Request to Deepgram API with options:', JSON.stringify(deepgramOptions, null, 2));
 
     const { result } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
@@ -58,7 +59,8 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
     const confidence = result.results?.channels[0]?.alternatives[0]?.confidence;
     const detected_language = result.results?.channels[0]?.detected_language;
 
-    console.log('Transcription result:', {
+    // Логируем обработанный результат
+    console.log('Processed transcription result:', {
       transcript: transcript.slice(0, 100) + '...',
       confidence,
       detected_language,
