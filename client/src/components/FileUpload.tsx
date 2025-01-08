@@ -11,7 +11,7 @@ interface FileUploadProps {
 }
 
 const DEFAULT_OPTIONS: TranscriptionOptions = {
-  model: "general",
+  model: "nova-2",
   smart_format: true,
   punctuate: true,
   numerals: true,

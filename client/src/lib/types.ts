@@ -15,9 +15,9 @@ export interface TranscriptionResponse {
 }
 
 export const AVAILABLE_MODELS = [
-  { value: "general", label: "General (Balanced)" },
-  { value: "base", label: "Base (Fastest)" },
-  { value: "enhanced", label: "Enhanced (Most accurate)" },
+  { value: "nova", label: "Nova (Fastest)" },
+  { value: "nova-2", label: "Nova-2 (Most accurate)" },
+  { value: "nova-2-general", label: "Nova-2 General (Balanced)" },
 ] as const;
 
 export const AVAILABLE_LANGUAGES = [
