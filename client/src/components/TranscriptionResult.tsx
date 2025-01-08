@@ -17,6 +17,15 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
     setTimeout(() => setCopied(false), 2000);
   };
 
+  console.log('TranscriptionResult received:', {
+    hasTranscript: !!transcription.transcript,
+    hasParagraphs: Array.isArray(transcription.paragraphs),
+    paragraphsLength: transcription.paragraphs?.length,
+    hasSpeakers: Array.isArray(transcription.speakers),
+    speakersLength: transcription.speakers?.length,
+    confidence: transcription.confidence,
+  });
+
   if (!transcription.transcript) {
     return (
       <div className="bg-yellow-50 rounded-lg p-4">
