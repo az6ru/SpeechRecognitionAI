@@ -5,7 +5,6 @@ if (!process.env.DEEPGRAM_API_KEY) {
   throw new Error("DEEPGRAM_API_KEY environment variable is required");
 }
 
-// Initialize the Deepgram SDK with the API key
 const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
 
 interface TranscriptionOptions {
@@ -19,14 +18,30 @@ interface TranscriptionOptions {
 
 export async function transcribeAudio(audioBuffer: Buffer, options: TranscriptionOptions) {
   try {
-    const { result, error } = await deepgram.listen.prerecorded.transcribeFile(audioBuffer, {
-      smart_format: options.smart_format,
+    // Преобразуем опции в формат, который ожидает Deepgram API
+    const deepgramOptions: any = {
       model: options.model,
-      language: options.language,
-      detect_language: options.detect_language,
+      smart_format: options.smart_format,
       punctuate: options.punctuate,
       numerals: options.numerals,
-    });
+    };
+
+    // Добавляем language только если он указан явно
+    if (options.language && options.language !== 'auto') {
+      deepgramOptions.language = options.language;
+    }
+
+    // Добавляем detect_language только если язык не указан явно
+    if (!options.language || options.language === 'auto') {
+      deepgramOptions.detect_language = true;
+    }
+
+    console.log('Deepgram API options:', deepgramOptions);
+
+    const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
+      audioBuffer,
+      deepgramOptions
+    );
 
     if (error) {
       throw new Error(error.message);

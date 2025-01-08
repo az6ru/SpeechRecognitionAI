@@ -9,7 +9,6 @@ const upload = multer({
     fileSize: 50 * 1024 * 1024, // 50MB limit
   },
   fileFilter: (_req, file, cb) => {
-    // Accept only audio files
     if (file.mimetype.startsWith('audio/')) {
       cb(null, true);
     } else {
@@ -26,7 +25,7 @@ export function registerRoutes(app: Express): Server {
       }
 
       let options = {
-        model: "enhanced",
+        model: "nova-2",
         smart_format: true,
         punctuate: true,
         numerals: true,
@@ -35,12 +34,17 @@ export function registerRoutes(app: Express): Server {
 
       try {
         if (req.body.options) {
-          options = JSON.parse(req.body.options);
+          const parsedOptions = JSON.parse(req.body.options);
+          options = {
+            ...options,
+            ...parsedOptions
+          };
         }
       } catch (e) {
-        console.warn("Failed to parse transcription options, using defaults");
+        console.warn("Failed to parse transcription options, using defaults:", e);
       }
 
+      console.log('Processing request with options:', options);
       const result = await transcribeAudio(req.file.buffer, options);
       res.json(result);
     } catch (error: any) {
