@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle } from "lucide-react";
 import type { TranscriptionResponse } from "@/lib/types";
+import { ExportButton } from "./ExportButton";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
@@ -58,7 +59,7 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
         )}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
         <Button
           variant="outline"
           size="sm"
@@ -77,6 +78,7 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
             </>
           )}
         </Button>
+        <ExportButton transcription={transcription} />
       </div>
 
       {transcription.confidence && (
