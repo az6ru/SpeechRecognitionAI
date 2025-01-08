@@ -72,28 +72,35 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
     if (options.smart_format && alternative.words) {
       let currentParagraph: string[] = [];
       let lastWordEnd = 0;
+      const MIN_PAUSE_FOR_PARAGRAPH = 2; // Увеличили минимальную паузу до 2 секунд
+      const MIN_WORDS_IN_PARAGRAPH = 10; // Минимальное количество слов в абзаце
 
       alternative.words.forEach((word: any, index: number) => {
-        // Проверяем паузу между словами (больше 1 секунды считаем новым параграфом)
         const pause = word.start - lastWordEnd;
-        const isLongPause = pause > 1;
-
-        // Используем punctuated_word для сохранения пунктуации
         const wordText = word.punctuated_word || word.word;
+        const isEndOfSentence = /[.!?]$/.test(wordText);
+        const isLongPause = pause > MIN_PAUSE_FOR_PARAGRAPH;
 
-        // Если длинная пауза или предыдущее слово заканчивается на знак конца предложения
-        if (isLongPause || (index > 0 && /[.!?]$/.test(currentParagraph[currentParagraph.length - 1]))) {
-          if (currentParagraph.length > 0) {
-            paragraphs.push(currentParagraph.join(' '));
-            currentParagraph = [];
-          }
+        // Добавляем слово в текущий параграф
+        currentParagraph.push(wordText);
+
+        // Создаем новый параграф только если:
+        // 1. Есть достаточное количество слов И
+        // 2. Текущее предложение закончилось И
+        // 3. Есть значительная пауза
+        if (
+          currentParagraph.length >= MIN_WORDS_IN_PARAGRAPH && 
+          isEndOfSentence && 
+          (isLongPause || index === alternative.words.length - 1)
+        ) {
+          paragraphs.push(currentParagraph.join(' '));
+          currentParagraph = [];
         }
 
-        currentParagraph.push(wordText);
         lastWordEnd = word.end;
       });
 
-      // Добавляем последний параграф
+      // Добавляем оставшиеся слова в последний параграф
       if (currentParagraph.length > 0) {
         paragraphs.push(currentParagraph.join(' '));
       }
