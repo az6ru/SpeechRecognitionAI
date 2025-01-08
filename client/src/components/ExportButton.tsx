@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Save } from "lucide-react";
 import { jsPDF } from "jspdf";
-import { Document, Packer, Paragraph, TextRun } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 import { saveAs } from "file-saver";
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import type { TranscriptionResponse } from "@/lib/types";
+import type { TranscriptionResponse, Speaker } from "@/lib/types";
 
 interface ExportButtonProps {
   transcription: TranscriptionResponse;
@@ -22,8 +22,8 @@ export function ExportButton({ transcription }: ExportButtonProps) {
   const formatTextWithSpeakers = () => {
     if (transcription.speakers && transcription.speakers.length > 0) {
       return transcription.speakers
-        .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}\n`)
-        .join('\n');
+        .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}`)
+        .join('\n\n');
     }
     if (transcription.paragraphs && transcription.paragraphs.length > 0) {
       return transcription.paragraphs.join('\n\n');
@@ -37,42 +37,68 @@ export function ExportButton({ transcription }: ExportButtonProps) {
       const doc = new jsPDF({
         orientation: "p",
         unit: "pt",
-        format: "a4"
+        format: "a4",
+        putOnlyUsedFonts: true,
+        compress: true
       });
 
-      // Установка шрифта для поддержки кириллицы
-      doc.setFont("Helvetica");
+      // Загружаем встроенный шрифт для поддержки кириллицы
+      doc.setFont("times", "normal");
       doc.setLanguage("ru");
 
       // Заголовок
-      doc.setFontSize(16);
+      doc.setFontSize(24);
       const title = "Транскрипция";
-      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageWidth = doc.internal.pageSize.width;
       const titleWidth = doc.getStringUnitWidth(title) * doc.getFontSize();
       const titleX = (pageWidth - titleWidth) / 2;
 
-      // Добавляем заголовок
-      doc.text(title, titleX, 40);
-
-      // Основной текст
+      doc.text(title, titleX, 50);
       doc.setFontSize(12);
-      const textContent = formatTextWithSpeakers();
+
       const margin = 40;
-      const maxWidth = pageWidth - 2 * margin;
-      const lines = doc.splitTextToSize(textContent, maxWidth);
-
-      let y = 80;
+      let y = 100;
       const lineHeight = 20;
+      const maxWidth = pageWidth - 2 * margin;
 
-      // Добавляем текст построчно
-      lines.forEach((line: string) => {
-        if (y > doc.internal.pageSize.getHeight() - margin) {
-          doc.addPage();
-          y = margin;
-        }
-        doc.text(line, margin, y);
-        y += lineHeight;
-      });
+      // Добавляем текст построчно с правильным форматированием
+      if (transcription.speakers && transcription.speakers.length > 0) {
+        transcription.speakers.forEach((speaker: Speaker) => {
+          // Заголовок спикера
+          const speakerHeader = `Спикер ${speaker.speaker + 1}:`;
+          doc.setFont("times", "bold");
+          doc.text(speakerHeader, margin, y);
+          y += lineHeight;
+
+          // Текст спикера
+          doc.setFont("times", "normal");
+          const lines = doc.splitTextToSize(speaker.text, maxWidth - 20);
+          lines.forEach(line => {
+            if (y > doc.internal.pageSize.height - margin) {
+              doc.addPage();
+              y = margin;
+            }
+            doc.text(line, margin + 20, y);
+            y += lineHeight;
+          });
+          y += lineHeight; // Дополнительный отступ между спикерами
+        });
+      } else {
+        const paragraphs = transcription.paragraphs || [transcription.transcript];
+        paragraphs.forEach(paragraph => {
+          if (!paragraph.trim()) return;
+          const lines = doc.splitTextToSize(paragraph, maxWidth);
+          lines.forEach(line => {
+            if (y > doc.internal.pageSize.height - margin) {
+              doc.addPage();
+              y = margin;
+            }
+            doc.text(line, margin, y);
+            y += lineHeight;
+          });
+          y += lineHeight / 2; // Отступ между абзацами
+        });
+      }
 
       doc.save("transcription.pdf");
     } catch (error) {
@@ -90,13 +116,8 @@ export function ExportButton({ transcription }: ExportButtonProps) {
           properties: {},
           children: [
             new Paragraph({
-              children: [
-                new TextRun({
-                  text: "Транскрипция",
-                  bold: true,
-                  size: 32,
-                }),
-              ],
+              text: "Транскрипция",
+              heading: HeadingLevel.HEADING_1,
               spacing: {
                 after: 400,
                 line: 360,
@@ -114,7 +135,6 @@ export function ExportButton({ transcription }: ExportButtonProps) {
                 spacing: {
                   before: 400,
                   after: 200,
-                  line: 360,
                 },
               }),
               new Paragraph({
@@ -125,8 +145,7 @@ export function ExportButton({ transcription }: ExportButtonProps) {
                   }),
                 ],
                 spacing: {
-                  after: 200,
-                  line: 360,
+                  after: 300,
                 },
               }),
             ]).flat() || transcription.paragraphs?.map((para) => 
@@ -140,7 +159,6 @@ export function ExportButton({ transcription }: ExportButtonProps) {
                 spacing: {
                   before: 200,
                   after: 200,
-                  line: 360,
                 },
               })
             ) || [
@@ -151,9 +169,6 @@ export function ExportButton({ transcription }: ExportButtonProps) {
                     size: 24,
                   }),
                 ],
-                spacing: {
-                  line: 360,
-                },
               }),
             ]),
           ],
@@ -185,8 +200,8 @@ export function ExportButton({ transcription }: ExportButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Save className="mr-2 h-4 w-4" />
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Save className="h-4 w-4" />
           Экспорт
         </Button>
       </DropdownMenuTrigger>

@@ -6,13 +6,18 @@ export interface TranscriptionOptions {
   detect_language?: boolean;
 }
 
+export interface Speaker {
+  speaker: number;
+  text: string;
+}
+
 export interface TranscriptionResponse {
   transcript: string;
   confidence?: number;
   detected_language?: string;
   duration?: number;
   paragraphs?: string[];
-  speakers?: { speaker: number; text: string }[];
+  speakers?: Speaker[];
 }
 
 export const AVAILABLE_MODELS = [

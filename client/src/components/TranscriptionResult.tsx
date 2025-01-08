@@ -9,11 +9,12 @@ interface TranscriptionResultProps {
 }
 
 const SPEAKER_COLORS = [
-  'border-blue-400 bg-blue-50',
-  'border-green-400 bg-green-50',
-  'border-purple-400 bg-purple-50',
-  'border-orange-400 bg-orange-50',
-  'border-pink-400 bg-pink-50',
+  'border-blue-500 bg-blue-50 text-blue-900',
+  'border-emerald-500 bg-emerald-50 text-emerald-900',
+  'border-purple-500 bg-purple-50 text-purple-900',
+  'border-orange-500 bg-orange-50 text-orange-900',
+  'border-pink-500 bg-pink-50 text-pink-900',
+  'border-cyan-500 bg-cyan-50 text-cyan-900',
 ];
 
 export function TranscriptionResult({ transcription }: TranscriptionResultProps) {
@@ -22,8 +23,8 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
   const formatText = () => {
     if (transcription.speakers && transcription.speakers.length > 0) {
       return transcription.speakers
-        .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}\n`)
-        .join('\n');
+        .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}`)
+        .join('\n\n');
     }
     if (transcription.paragraphs && transcription.paragraphs.length > 0) {
       return transcription.paragraphs.join('\n\n');
@@ -49,31 +50,31 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
 
   return (
     <div className="space-y-4">
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
         {transcription.speakers && transcription.speakers.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {transcription.speakers.map((speaker, index) => (
               <div 
-                key={index} 
-                className={`border-l-4 pl-4 p-3 rounded-r-lg ${SPEAKER_COLORS[index % SPEAKER_COLORS.length]}`}
+                key={index}
+                className={`border-l-4 pl-4 p-4 rounded-r-lg ${SPEAKER_COLORS[index % SPEAKER_COLORS.length]}`}
               >
-                <p className="font-semibold text-sm mb-2">
+                <div className="font-semibold mb-2 text-sm">
                   Спикер {speaker.speaker + 1}
-                </p>
-                <p className="text-gray-700">{speaker.text}</p>
+                </div>
+                <p className="leading-relaxed">{speaker.text}</p>
               </div>
             ))}
           </div>
         ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
           <div className="space-y-4">
-            {transcription.paragraphs.map((paragraph: string, index: number) => (
-              <p key={index} className="text-gray-700">
+            {transcription.paragraphs.map((paragraph, index) => (
+              <p key={index} className="text-gray-700 leading-relaxed">
                 {paragraph}
               </p>
             ))}
           </div>
         ) : (
-          <p className="text-gray-700 whitespace-pre-wrap">
+          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
             {transcription.transcript}
           </p>
         )}
