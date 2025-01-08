@@ -71,8 +71,28 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
         console.log('Extracted paragraphs:', paragraphs);
       } else {
         console.log('No paragraphs found in response:', paragraphsData);
-        // Если абзацы не найдены, разбиваем текст по точкам
-        paragraphs = transcript.split(/(?<=[.!?])\s+/).filter(p => p.trim());
+        // Если абзацы не найдены, разбиваем по предложениям из структуры sentences
+        const sentences = result.results?.channels[0]?.alternatives[0]?.paragraphs?.sentences;
+        if (sentences && Array.isArray(sentences)) {
+          // Группируем предложения в параграфы по 3-5 предложений
+          paragraphs = [];
+          let currentParagraph: string[] = [];
+
+          sentences.forEach((sentence: any, index: number) => {
+            currentParagraph.push(sentence.text);
+
+            // Создаем новый параграф каждые 3-5 предложений или если это последнее предложение
+            if (currentParagraph.length >= 3 || index === sentences.length - 1) {
+              paragraphs!.push(currentParagraph.join(' '));
+              currentParagraph = [];
+            }
+          });
+
+          console.log('Created paragraphs from sentences:', paragraphs);
+        } else {
+          // Если нет ни параграфов, ни предложений, разбиваем по знакам препинания
+          paragraphs = transcript.split(/(?<=[.!?])\s+/).filter(p => p.trim());
+        }
       }
     }
 
