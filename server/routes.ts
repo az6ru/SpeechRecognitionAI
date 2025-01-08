@@ -59,7 +59,7 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Новый эндпоинт для конвертации HTML в PDF
+  // Эндпоинт для конвертации HTML в PDF
   app.post("/api/export-pdf", async (req, res) => {
     try {
       const { html } = req.body;
@@ -70,16 +70,16 @@ export function registerRoutes(app: Express): Server {
       const options = {
         format: 'A4',
         border: {
-          top: "40px",
-          right: "40px",
-          bottom: "40px",
-          left: "40px"
+          top: "20px",    // Уменьшили с 40px
+          right: "20px",  // Уменьшили с 40px
+          bottom: "20px", // Уменьшили с 40px
+          left: "20px"    // Уменьшили с 40px
         },
         header: {
-          height: "45mm"
+          height: "15mm"  // Уменьшили с 45mm
         },
         footer: {
-          height: "28mm"
+          height: "10mm"  // Уменьшили с 28mm
         },
         encoding: 'UTF-8'
       };
