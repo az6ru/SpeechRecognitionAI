@@ -22,18 +22,18 @@ export function ExportButton({ transcription }: ExportButtonProps) {
     setIsExporting(true);
     try {
       const doc = new jsPDF();
-      
+
       // Добавляем заголовок
       doc.setFontSize(16);
       doc.text("Транскрипция", 20, 20);
-      
+
       // Добавляем текст транскрипции
       doc.setFontSize(12);
-      
+
       // Разбиваем текст на строки с учетом ширины страницы
       const lines = doc.splitTextToSize(transcription.transcript, 170);
       doc.text(lines, 20, 30);
-      
+
       // Сохраняем файл
       doc.save("transcription.pdf");
     } catch (error) {
@@ -71,7 +71,7 @@ export function ExportButton({ transcription }: ExportButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="w-full">
+        <Button variant="outline" size="sm">
           <Save className="mr-2 h-4 w-4" />
           Экспорт
         </Button>
