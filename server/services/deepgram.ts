@@ -4,10 +4,6 @@ if (!process.env.DEEPGRAM_API_KEY) {
   throw new Error("DEEPGRAM_API_KEY environment variable is required");
 }
 
-if (!process.env.DEEPGRAM_MODEL) {
-  throw new Error("DEEPGRAM_MODEL environment variable is required");
-}
-
 const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
 
 interface TranscriptionOptions {
@@ -26,27 +22,28 @@ interface TranscriptionResult {
 export async function transcribeAudio(audioBuffer: Buffer, options: TranscriptionOptions): Promise<TranscriptionResult> {
   try {
     const deepgramOptions = {
-      model: process.env.DEEPGRAM_MODEL,
       smart_format: options.smart_format === true,
-      punctuate: true, // Всегда включено
-      numerals: true, // Всегда включено
+      punctuate: true,
+      numerals: true,
       diarize: options.diarize ?? false,
+      language: 'ru', // добавляем поддержку русского языка
+      model: 'general' // используем базовую модель, доступную по умолчанию
     };
 
     console.log('Request to Deepgram API with options:', JSON.stringify(deepgramOptions, null, 2));
 
-    const response = await deepgram.listen.prerecorded.transcribeFile(
+    const { result } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
       deepgramOptions
     );
 
-    console.log('Raw Deepgram response:', JSON.stringify(response, null, 2));
+    console.log('Raw Deepgram response:', JSON.stringify(result, null, 2));
 
-    if (!response?.results?.channels?.[0]?.alternatives?.[0]) {
+    if (!result?.results?.channels?.[0]?.alternatives?.[0]) {
       throw new Error("Invalid response format from Deepgram API");
     }
 
-    const channel = response.results.channels[0];
+    const channel = result.results.channels[0];
     const alternative = channel.alternatives[0];
 
     if (!alternative.transcript) {
@@ -56,16 +53,15 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
     const transcript = alternative.transcript;
     const confidence = alternative.confidence;
     const detected_language = channel.detected_language;
-    const duration = response.metadata?.duration;
+    const duration = result.metadata?.duration;
 
-    // Извлекаем абзацы из слов с учетом пауз и пунктуации
     let paragraphs: string[] = [];
 
     if (options.smart_format && alternative.words) {
       let currentParagraph: string[] = [];
       let lastWordEnd = 0;
-      const MIN_PAUSE_FOR_PARAGRAPH = 1.5; // Уменьшили паузу до 1.5 секунд
-      const MIN_WORDS_IN_PARAGRAPH = 10; // Уменьшили минимальное количество слов
+      const MIN_PAUSE_FOR_PARAGRAPH = 1.5;
+      const MIN_WORDS_IN_PARAGRAPH = 10;
 
       alternative.words.forEach((word: any, index: number) => {
         const pause = word.start - lastWordEnd;
@@ -87,7 +83,6 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
         lastWordEnd = word.end;
       });
 
-      // Добавляем оставшиеся слова в последний параграф
       if (currentParagraph.length > 0) {
         paragraphs.push(currentParagraph.join(' '));
       }
@@ -97,7 +92,7 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       paragraphs = [transcript];
     }
 
-    const result = {
+    const transcriptionResult = {
       transcript,
       confidence,
       detected_language,
@@ -113,7 +108,7 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       paragraphs_count: paragraphs.length
     });
 
-    return result;
+    return transcriptionResult;
   } catch (error) {
     console.error("Deepgram API error:", error);
     throw error;

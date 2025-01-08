@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import FileUpload from "../components/FileUpload";
-import TranscriptionResult from "../components/TranscriptionResult";
 import { Mic } from "lucide-react";
-import { type TranscriptionResponse } from "../lib/types";
+import type { TranscriptionResponse } from "../lib/types.ts";
+import { FileUpload } from "../components/FileUpload.tsx";
+import { TranscriptionResult } from "../components/TranscriptionResult.tsx";
 
 export default function Home() {
   const [transcription, setTranscription] = useState<TranscriptionResponse | null>(null);
@@ -16,16 +16,16 @@ export default function Home() {
             <Mic className="h-12 w-12 text-primary" />
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-            Speech Recognition Service
+            Сервис распознавания речи
           </h1>
           <p className="mt-4 text-lg text-gray-600">
-            Upload your audio file and get accurate transcription powered by Deepgram
+            Загрузите аудиофайл и получите точную транскрипцию с помощью Deepgram
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Upload Audio</CardTitle>
+            <CardTitle>Загрузка аудио</CardTitle>
           </CardHeader>
           <CardContent>
             <FileUpload onTranscriptionComplete={setTranscription} />
@@ -35,7 +35,7 @@ export default function Home() {
         {transcription && (
           <Card>
             <CardHeader>
-              <CardTitle>Transcription Result</CardTitle>
+              <CardTitle>Результат транскрипции</CardTitle>
             </CardHeader>
             <CardContent>
               <TranscriptionResult transcription={transcription} />
