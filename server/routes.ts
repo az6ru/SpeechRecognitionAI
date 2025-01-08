@@ -8,6 +8,14 @@ const upload = multer({
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB limit
   },
+  fileFilter: (_req, file, cb) => {
+    // Accept only audio files
+    if (file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed'));
+    }
+  }
 });
 
 export function registerRoutes(app: Express): Server {
@@ -19,10 +27,10 @@ export function registerRoutes(app: Express): Server {
 
       const result = await transcribeAudio(req.file.buffer);
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Transcription error:", error);
       res.status(500).json({
-        error: "Failed to transcribe audio",
+        error: error.message || "Failed to transcribe audio",
       });
     }
   });

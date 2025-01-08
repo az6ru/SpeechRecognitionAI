@@ -10,11 +10,15 @@ const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
 
 export async function transcribeAudio(audioBuffer: Buffer) {
   try {
-    const { result } = await deepgram.transcribe(audioBuffer, {
+    const { result, error } = await deepgram.listen.prerecorded.transcribeFile(audioBuffer, {
       smart_format: true,
       model: "general",
       language: "ru",
     });
+
+    if (error) {
+      throw new Error(error.message);
+    }
 
     return {
       transcript: result.results?.channels[0]?.alternatives[0]?.transcript || "",
