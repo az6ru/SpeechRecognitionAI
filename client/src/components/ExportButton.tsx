@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Save } from "lucide-react";
-import { jsPDF } from "jspdf";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 import { saveAs } from "file-saver";
 import {
@@ -34,71 +33,60 @@ export function ExportButton({ transcription }: ExportButtonProps) {
   const exportAsPDF = async () => {
     setIsExporting(true);
     try {
-      // Создаем документ с поддержкой кириллицы
-      const doc = new jsPDF({
-        orientation: "p",
-        unit: "pt",
-        format: "a4",
-        putOnlyUsedFonts: true,
-        compress: true,
-        hotfixes: ["px_scaling"]
-      });
-
-      // Заголовок
-      doc.setFontSize(24);
-      const title = "Транскрипция";
-      const pageWidth = doc.internal.pageSize.width;
-      doc.text(title, pageWidth / 2, 50, { align: "center" });
-      doc.setFontSize(12);
-
-      const margin = 40;
-      let y = 100;
-      const lineHeight = 20;
-      const maxWidth = pageWidth - 2 * margin;
+      // Создаем HTML разметку для PDF
+      let htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            h1 { font-size: 24px; text-align: center; margin-bottom: 30px; }
+            .speaker { margin-bottom: 20px; }
+            .speaker-header { font-weight: bold; margin-bottom: 10px; }
+            .speaker-text { margin-left: 20px; line-height: 1.5; }
+            .paragraph { margin-bottom: 15px; line-height: 1.5; }
+          </style>
+        </head>
+        <body>
+          <h1>Транскрипция</h1>
+      `;
 
       if (transcription.speakers && transcription.speakers.length > 0) {
-        for (const speaker of transcription.speakers) {
-          // Заголовок спикера
-          doc.setFontSize(14);
-          const speakerHeader = `Спикер ${speaker.speaker + 1}:`;
-          doc.text(speakerHeader, margin, y);
-          y += lineHeight * 1.5;
-
-          // Текст спикера
-          doc.setFontSize(12);
-          const textLines = doc.splitTextToSize(speaker.text, maxWidth - 20);
-
-          for (const line of textLines) {
-            if (y > doc.internal.pageSize.height - margin) {
-              doc.addPage();
-              y = margin;
-            }
-            doc.text(line, margin + 20, y);
-            y += lineHeight;
-          }
-          y += lineHeight; // Дополнительный отступ между спикерами
-        }
+        htmlContent += transcription.speakers.map(speaker => `
+          <div class="speaker">
+            <div class="speaker-header">Спикер ${speaker.speaker + 1}:</div>
+            <div class="speaker-text">${speaker.text}</div>
+          </div>
+        `).join('');
+      } else if (transcription.paragraphs && transcription.paragraphs.length > 0) {
+        htmlContent += transcription.paragraphs.map(paragraph => `
+          <div class="paragraph">${paragraph}</div>
+        `).join('');
       } else {
-        const paragraphs = transcription.paragraphs || [transcription.transcript];
-
-        for (const paragraph of paragraphs) {
-          if (!paragraph.trim()) continue;
-
-          const textLines = doc.splitTextToSize(paragraph, maxWidth);
-
-          for (const line of textLines) {
-            if (y > doc.internal.pageSize.height - margin) {
-              doc.addPage();
-              y = margin;
-            }
-            doc.text(line, margin, y);
-            y += lineHeight;
-          }
-          y += lineHeight / 2; // Отступ между абзацами
-        }
+        htmlContent += `<div class="paragraph">${transcription.transcript}</div>`;
       }
 
-      doc.save("transcription.pdf");
+      htmlContent += `
+        </body>
+        </html>
+      `;
+
+      // Конвертируем HTML в PDF через API endpoint
+      const response = await fetch('/api/export-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ html: htmlContent }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      const blob = await response.blob();
+      saveAs(blob, "transcription.pdf");
     } catch (error) {
       console.error("Error exporting to PDF:", error);
     } finally {

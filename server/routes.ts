@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { transcribeAudio } from "./services/deepgram";
+import pdf from 'html-pdf';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -24,7 +25,6 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ error: "No audio file provided" });
       }
 
-      // Базовые опции по умолчанию
       const defaultOptions = {
         model: "nova-2",
         smart_format: true,
@@ -39,8 +39,8 @@ export function registerRoutes(app: Express): Server {
         if (req.body.options) {
           const parsedOptions = JSON.parse(req.body.options);
           options = {
-            ...defaultOptions,  // Сначала дефолтные значения
-            ...parsedOptions    // Затем пользовательские, которые перезапишут дефолтные
+            ...defaultOptions,
+            ...parsedOptions
           };
         }
       } catch (e) {
@@ -56,6 +56,47 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({
         error: error.message || "Failed to transcribe audio",
       });
+    }
+  });
+
+  // Новый эндпоинт для конвертации HTML в PDF
+  app.post("/api/export-pdf", async (req, res) => {
+    try {
+      const { html } = req.body;
+      if (!html) {
+        return res.status(400).json({ error: "HTML content is required" });
+      }
+
+      const options = {
+        format: 'A4',
+        border: {
+          top: "40px",
+          right: "40px",
+          bottom: "40px",
+          left: "40px"
+        },
+        header: {
+          height: "45mm"
+        },
+        footer: {
+          height: "28mm"
+        },
+        encoding: 'UTF-8'
+      };
+
+      pdf.create(html, options).toBuffer((err, buffer) => {
+        if (err) {
+          console.error("PDF generation error:", err);
+          return res.status(500).json({ error: "Failed to generate PDF" });
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=transcription.pdf');
+        res.send(buffer);
+      });
+    } catch (error) {
+      console.error("PDF export error:", error);
+      res.status(500).json({ error: "Failed to generate PDF" });
     }
   });
 
