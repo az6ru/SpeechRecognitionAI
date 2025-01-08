@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import type { TranscriptionResponse, Speaker } from "@/lib/types";
+import type { TranscriptionResponse } from "@/lib/types";
 
 interface ExportButtonProps {
   transcription: TranscriptionResponse;
@@ -42,32 +42,32 @@ export function ExportButton({ transcription }: ExportButtonProps) {
           <style>
             body { 
               font-family: Arial, sans-serif; 
-              padding: 30px;
-              font-size: 12px;
-              line-height: 1.4;
+              padding: 20px;
+              font-size: 10px;
+              line-height: 1.3;
             }
             h1 { 
-              font-size: 20px; 
+              font-size: 16px; 
               text-align: center; 
-              margin-bottom: 25px;
+              margin-bottom: 20px;
               font-weight: bold;
             }
             .speaker { 
-              margin-bottom: 15px;
+              margin-bottom: 12px;
               page-break-inside: avoid;
             }
             .speaker-header { 
               font-weight: bold; 
-              margin-bottom: 8px;
-              font-size: 13px;
+              margin-bottom: 6px;
+              font-size: 11px;
             }
             .speaker-text { 
-              margin-left: 15px;
-              line-height: 1.4;
+              margin-left: 12px;
+              line-height: 1.3;
             }
             .paragraph { 
-              margin-bottom: 12px;
-              line-height: 1.4;
+              margin-bottom: 10px;
+              line-height: 1.3;
             }
           </style>
         </head>
