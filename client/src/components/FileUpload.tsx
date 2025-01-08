@@ -4,14 +4,14 @@ import { Upload, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { TranscriptionResponse, TranscriptionOptions } from "../lib/types";
-import TranscriptionOptionsForm from "./TranscriptionOptions";
+import TranscriptionOptionsForm from "@/components/TranscriptionOptionsForm";
 
 interface FileUploadProps {
   onTranscriptionComplete: (result: TranscriptionResponse) => void;
 }
 
 const DEFAULT_OPTIONS: TranscriptionOptions = {
-  model: "enhanced",
+  model: "general",
   smart_format: true,
   punctuate: true,
   numerals: true,
