@@ -72,14 +72,15 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
     if (options.smart_format && alternative.words) {
       let currentParagraph: string[] = [];
       let lastWordEnd = 0;
-      const MIN_PAUSE_FOR_PARAGRAPH = 2; // Увеличили минимальную паузу до 2 секунд
-      const MIN_WORDS_IN_PARAGRAPH = 10; // Минимальное количество слов в абзаце
+      const MIN_PAUSE_FOR_PARAGRAPH = 3; // Увеличили минимальную паузу до 3 секунд
+      const MIN_WORDS_IN_PARAGRAPH = 20; // Увеличили минимальное количество слов в абзаце
 
       alternative.words.forEach((word: any, index: number) => {
         const pause = word.start - lastWordEnd;
         const wordText = word.punctuated_word || word.word;
         const isEndOfSentence = /[.!?]$/.test(wordText);
         const isLongPause = pause > MIN_PAUSE_FOR_PARAGRAPH;
+        const isLastWord = index === alternative.words.length - 1;
 
         // Добавляем слово в текущий параграф
         currentParagraph.push(wordText);
@@ -87,11 +88,11 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
         // Создаем новый параграф только если:
         // 1. Есть достаточное количество слов И
         // 2. Текущее предложение закончилось И
-        // 3. Есть значительная пауза
+        // 3. (Есть значительная пауза ИЛИ это последнее слово)
         if (
           currentParagraph.length >= MIN_WORDS_IN_PARAGRAPH && 
           isEndOfSentence && 
-          (isLongPause || index === alternative.words.length - 1)
+          (isLongPause || isLastWord)
         ) {
           paragraphs.push(currentParagraph.join(' '));
           currentParagraph = [];
