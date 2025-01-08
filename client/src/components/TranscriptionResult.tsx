@@ -9,12 +9,14 @@ interface TranscriptionResultProps {
 }
 
 const SPEAKER_COLORS = [
-  'border-blue-500 bg-blue-50 text-blue-900',
-  'border-emerald-500 bg-emerald-50 text-emerald-900',
-  'border-purple-500 bg-purple-50 text-purple-900',
-  'border-orange-500 bg-orange-50 text-orange-900',
-  'border-pink-500 bg-pink-50 text-pink-900',
-  'border-cyan-500 bg-cyan-50 text-cyan-900',
+  'border-blue-600 bg-blue-50/80 text-blue-900',
+  'border-emerald-600 bg-emerald-50/80 text-emerald-900',
+  'border-purple-600 bg-purple-50/80 text-purple-900',
+  'border-orange-600 bg-orange-50/80 text-orange-900',
+  'border-pink-600 bg-pink-50/80 text-pink-900',
+  'border-cyan-600 bg-cyan-50/80 text-cyan-900',
+  'border-red-600 bg-red-50/80 text-red-900',
+  'border-amber-600 bg-amber-50/80 text-amber-900',
 ];
 
 export function TranscriptionResult({ transcription }: TranscriptionResultProps) {
@@ -52,14 +54,19 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
     <div className="space-y-4">
       <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
         {transcription.speakers && transcription.speakers.length > 0 ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {transcription.speakers.map((speaker, index) => (
               <div 
                 key={index}
-                className={`border-l-4 pl-4 p-4 rounded-r-lg ${SPEAKER_COLORS[index % SPEAKER_COLORS.length]}`}
+                className={`relative border-l-4 pl-4 p-4 rounded-lg shadow-sm 
+                  transition-colors duration-200 hover:shadow-md 
+                  ${SPEAKER_COLORS[index % SPEAKER_COLORS.length]}`}
               >
-                <div className="font-semibold mb-2 text-sm">
-                  Спикер {speaker.speaker + 1}
+                <div className="font-medium mb-2 flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white shadow-sm text-sm font-semibold">
+                    {speaker.speaker + 1}
+                  </span>
+                  <span className="text-sm">Спикер {speaker.speaker + 1}</span>
                 </div>
                 <p className="leading-relaxed">{speaker.text}</p>
               </div>
