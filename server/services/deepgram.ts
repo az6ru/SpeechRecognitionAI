@@ -35,28 +35,28 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
 
     console.log('Request to Deepgram API with options:', JSON.stringify(deepgramOptions, null, 2));
 
-    const { result } = await deepgram.listen.prerecorded.transcribeFile(
+    const response = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
       deepgramOptions
     );
 
-    if (!result) {
-      throw new Error("Failed to get transcription result");
+    console.log('Raw Deepgram response:', JSON.stringify(response, null, 2));
+
+    if (!response?.results?.channels?.[0]?.alternatives?.[0]) {
+      throw new Error("Invalid response format from Deepgram API");
     }
 
-    console.log('Full Deepgram API response:', JSON.stringify(result, null, 2));
+    const channel = response.results.channels[0];
+    const alternative = channel.alternatives[0];
 
-    const channel = result.results?.channels[0];
-    const alternative = channel?.alternatives[0];
-
-    if (!alternative) {
-      throw new Error("No transcription alternative found");
+    if (!alternative.transcript) {
+      throw new Error("No transcript in Deepgram response");
     }
 
-    const transcript = alternative.transcript || "";
+    const transcript = alternative.transcript;
     const confidence = alternative.confidence;
-    const detected_language = channel?.detected_language;
-    const duration = result.metadata?.duration;
+    const detected_language = channel.detected_language;
+    const duration = response.metadata?.duration;
 
     // Извлекаем абзацы из слов с учетом пауз и пунктуации
     let paragraphs: string[] = [];
@@ -64,8 +64,8 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
     if (options.smart_format && alternative.words) {
       let currentParagraph: string[] = [];
       let lastWordEnd = 0;
-      const MIN_PAUSE_FOR_PARAGRAPH = 3; // Увеличили минимальную паузу до 3 секунд
-      const MIN_WORDS_IN_PARAGRAPH = 20; // Увеличили минимальное количество слов в абзаце
+      const MIN_PAUSE_FOR_PARAGRAPH = 1.5; // Уменьшили паузу до 1.5 секунд
+      const MIN_WORDS_IN_PARAGRAPH = 10; // Уменьшили минимальное количество слов
 
       alternative.words.forEach((word: any, index: number) => {
         const pause = word.start - lastWordEnd;
@@ -74,17 +74,11 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
         const isLongPause = pause > MIN_PAUSE_FOR_PARAGRAPH;
         const isLastWord = index === alternative.words.length - 1;
 
-        // Добавляем слово в текущий параграф
         currentParagraph.push(wordText);
 
-        // Создаем новый параграф только если:
-        // 1. Есть достаточное количество слов И
-        // 2. Текущее предложение закончилось И
-        // 3. (Есть значительная пауза ИЛИ это последнее слово)
         if (
           currentParagraph.length >= MIN_WORDS_IN_PARAGRAPH && 
-          isEndOfSentence && 
-          (isLongPause || isLastWord)
+          (isEndOfSentence && isLongPause || isLastWord)
         ) {
           paragraphs.push(currentParagraph.join(' '));
           currentParagraph = [];
@@ -98,36 +92,28 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
         paragraphs.push(currentParagraph.join(' '));
       }
 
-      console.log('Created paragraphs from words:', paragraphs);
+      console.log('Created paragraphs:', paragraphs.length);
     } else {
-      // Если smart_format выключен, возвращаем весь текст как один параграф
       paragraphs = [transcript];
     }
 
-    // Логируем обработанный результат
-    console.log('Processed transcription result:', {
-      transcript: transcript.slice(0, 100) + '...',
-      confidence,
-      detected_language,
-      duration,
-      model: result.metadata?.model,
-      request_id: result.metadata?.request_id,
-      features_used: {
-        smart_format: deepgramOptions.smart_format,
-        punctuate: deepgramOptions.punctuate,
-        numerals: deepgramOptions.numerals,
-        diarize: deepgramOptions.diarize
-      },
-      paragraphs_count: paragraphs.length
-    });
-
-    return {
+    const result = {
       transcript,
       confidence,
       detected_language,
       duration,
       paragraphs
     };
+
+    console.log('Final transcription result:', {
+      transcript_length: transcript.length,
+      confidence,
+      detected_language,
+      duration,
+      paragraphs_count: paragraphs.length
+    });
+
+    return result;
   } catch (error) {
     console.error("Deepgram API error:", error);
     throw error;
