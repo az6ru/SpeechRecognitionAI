@@ -22,6 +22,7 @@ interface TranscriptionResult {
   confidence?: number;
   detected_language?: string;
   duration?: number;
+  paragraphs?: string[];
 }
 
 export async function transcribeAudio(audioBuffer: Buffer, options: TranscriptionOptions): Promise<TranscriptionResult> {
@@ -53,13 +54,20 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       throw new Error("Failed to get transcription result");
     }
 
-    // Логируем полный ответ от API
+    // Логируем полный ответ от API для отладки
     console.log('Full Deepgram API response:', JSON.stringify(result, null, 2));
 
-    const duration = result.metadata?.duration;
     const transcript = result.results?.channels[0]?.alternatives[0]?.transcript || "";
     const confidence = result.results?.channels[0]?.alternatives[0]?.confidence;
     const detected_language = result.results?.channels[0]?.detected_language;
+    const duration = result.metadata?.duration;
+
+    // Извлекаем абзацы, если включено умное форматирование
+    let paragraphs: string[] | undefined;
+    if (options.smart_format) {
+      const paragraphsData = result.results?.channels[0]?.alternatives[0]?.paragraphs?.paragraphs;
+      paragraphs = paragraphsData?.map(p => p.text) || undefined;
+    }
 
     // Логируем обработанный результат
     console.log('Processed transcription result:', {
@@ -74,7 +82,8 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
         punctuate: deepgramOptions.punctuate,
         numerals: deepgramOptions.numerals,
         diarize: deepgramOptions.diarize
-      }
+      },
+      paragraphs_count: paragraphs?.length
     });
 
     return {
@@ -82,6 +91,7 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       confidence,
       detected_language,
       duration,
+      paragraphs
     };
   } catch (error) {
     console.error("Deepgram API error:", error);

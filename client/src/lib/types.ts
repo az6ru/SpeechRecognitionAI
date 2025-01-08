@@ -14,6 +14,7 @@ export interface TranscriptionResponse {
   detected_language?: string;
   duration?: number;
   error?: string;
+  paragraphs?: string[]; // Добавляем поддержку абзацев
 }
 
 export const AVAILABLE_MODELS = [

@@ -19,7 +19,21 @@ export default function TranscriptionResult({ transcription }: TranscriptionResu
   return (
     <div className="space-y-4">
       <div className="bg-gray-50 rounded-lg p-4">
-        <p className="text-gray-700 whitespace-pre-wrap">{transcription.transcript}</p>
+        {transcription.paragraphs ? (
+          // Если есть абзацы, отображаем их с отступами
+          <div className="space-y-4">
+            {transcription.paragraphs.map((paragraph, index) => (
+              <p key={index} className="text-gray-700">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        ) : (
+          // Если абзацев нет, отображаем весь текст как есть
+          <p className="text-gray-700 whitespace-pre-wrap">
+            {transcription.transcript}
+          </p>
+        )}
       </div>
 
       <div className="flex justify-end">
