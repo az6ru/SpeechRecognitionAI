@@ -68,7 +68,7 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       try {
         const paragraphGroups = Array.isArray(alternative.paragraphs) ? 
           alternative.paragraphs : 
-          Object.values(alternative.paragraphs);
+          alternative.paragraphs.paragraphs || [];
 
         paragraphGroups.forEach((para: any) => {
           if (para.speaker !== undefined && para.sentences) {
@@ -94,7 +94,7 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       try {
         const paragraphGroups = Array.isArray(alternative.paragraphs) ? 
           alternative.paragraphs : 
-          Object.values(alternative.paragraphs);
+          alternative.paragraphs.paragraphs || [];
 
         paragraphs = paragraphGroups.map((para: any) => {
           if (Array.isArray(para.sentences)) {
