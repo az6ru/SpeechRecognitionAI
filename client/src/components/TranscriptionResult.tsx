@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle } from "lucide-react";
-import { TranscriptionResponse } from "../lib/types";
+import type { TranscriptionResponse } from "@/lib/types";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
 }
 
-export default function TranscriptionResult({ transcription }: TranscriptionResultProps) {
+export function TranscriptionResult({ transcription }: TranscriptionResultProps) {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
@@ -30,16 +30,14 @@ export default function TranscriptionResult({ transcription }: TranscriptionResu
     <div className="space-y-4">
       <div className="bg-gray-50 rounded-lg p-4">
         {transcription.paragraphs && transcription.paragraphs.length > 0 ? (
-          // Если есть абзацы, отображаем их с отступами
           <div className="space-y-4">
-            {transcription.paragraphs.map((paragraph, index) => (
+            {transcription.paragraphs.map((paragraph: string, index: number) => (
               <p key={index} className="text-gray-700">
                 {paragraph}
               </p>
             ))}
           </div>
         ) : (
-          // Если абзацев нет, отображаем весь текст как есть
           <p className="text-gray-700 whitespace-pre-wrap">
             {transcription.transcript}
           </p>

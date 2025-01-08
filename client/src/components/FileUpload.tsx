@@ -4,9 +4,9 @@ import { Upload, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { TranscriptionResponse, TranscriptionOptions } from "../lib/types";
-import TranscriptionOptionsForm from "@/components/TranscriptionOptionsForm";
-import AudioPlayer from "@/components/AudioPlayer";
+import { TranscriptionResponse, TranscriptionOptions } from "@/lib/types";
+import TranscriptionOptionsForm from "./TranscriptionOptionsForm";
+import AudioPlayer from "./AudioPlayer";
 
 interface FileUploadProps {
   onTranscriptionComplete: (result: TranscriptionResponse) => void;
@@ -18,7 +18,7 @@ const DEFAULT_OPTIONS: TranscriptionOptions = {
   numerals: true
 };
 
-export default function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
+export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [options, setOptions] = useState<TranscriptionOptions>(DEFAULT_OPTIONS);

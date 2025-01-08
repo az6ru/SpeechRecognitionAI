@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mic } from "lucide-react";
-import type { TranscriptionResponse } from "../lib/types.ts";
-import { FileUpload } from "../components/FileUpload.tsx";
-import { TranscriptionResult } from "../components/TranscriptionResult.tsx";
+import type { TranscriptionResponse } from "@/lib/types";
+import { FileUpload } from "@/components/FileUpload";
+import { TranscriptionResult } from "@/components/TranscriptionResult";
 
 export default function Home() {
   const [transcription, setTranscription] = useState<TranscriptionResponse | null>(null);
