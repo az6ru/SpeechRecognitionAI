@@ -14,6 +14,7 @@ interface TranscriptionOptions {
   smart_format?: boolean;
   punctuate?: boolean;
   numerals?: boolean;
+  diarize?: boolean;
 }
 
 interface TranscriptionResult {
@@ -27,10 +28,11 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
   try {
     const deepgramOptions = {
       model: options.model,
-      smart_format: options.smart_format,
-      punctuate: options.punctuate,
-      numerals: options.numerals,
-      detect_language: options.detect_language,
+      smart_format: options.smart_format ?? false,
+      punctuate: options.punctuate ?? true,
+      numerals: options.numerals ?? true,
+      detect_language: options.detect_language ?? true,
+      diarize: options.diarize ?? false,
     };
 
     // Если язык указан явно и это не auto, добавляем его в параметры
@@ -70,7 +72,8 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       features_used: {
         smart_format: deepgramOptions.smart_format,
         punctuate: deepgramOptions.punctuate,
-        numerals: deepgramOptions.numerals
+        numerals: deepgramOptions.numerals,
+        diarize: deepgramOptions.diarize
       }
     });
 

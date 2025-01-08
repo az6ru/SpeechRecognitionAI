@@ -5,6 +5,7 @@ export interface TranscriptionOptions {
   smart_format?: boolean;
   punctuate?: boolean;
   numerals?: boolean;
+  diarize?: boolean;
 }
 
 export interface TranscriptionResponse {

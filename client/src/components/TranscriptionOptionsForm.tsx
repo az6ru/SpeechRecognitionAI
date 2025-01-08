@@ -57,7 +57,10 @@ export default function TranscriptionOptionsForm({ options, onChange }: Transcri
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label>Умное форматирование</Label>
+            <div>
+              <Label>Умное форматирование</Label>
+              <p className="text-sm text-gray-500">Улучшает читаемость, добавляя знаки препинания и форматирование</p>
+            </div>
             <Switch 
               checked={options.smart_format}
               onCheckedChange={(checked) => handleChange("smart_format", checked)}
@@ -65,7 +68,21 @@ export default function TranscriptionOptionsForm({ options, onChange }: Transcri
           </div>
 
           <div className="flex items-center justify-between">
-            <Label>Пунктуация</Label>
+            <div>
+              <Label>Распознавание говорящих</Label>
+              <p className="text-sm text-gray-500">Определяет смену говорящих в диалоге</p>
+            </div>
+            <Switch 
+              checked={options.diarize}
+              onCheckedChange={(checked) => handleChange("diarize", checked)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Пунктуация</Label>
+              <p className="text-sm text-gray-500">Добавляет знаки препинания</p>
+            </div>
             <Switch 
               checked={options.punctuate}
               onCheckedChange={(checked) => handleChange("punctuate", checked)}
@@ -73,7 +90,10 @@ export default function TranscriptionOptionsForm({ options, onChange }: Transcri
           </div>
 
           <div className="flex items-center justify-between">
-            <Label>Преобразование чисел</Label>
+            <div>
+              <Label>Преобразование чисел</Label>
+              <p className="text-sm text-gray-500">Конвертирует числа из цифр в текст</p>
+            </div>
             <Switch 
               checked={options.numerals}
               onCheckedChange={(checked) => handleChange("numerals", checked)}
