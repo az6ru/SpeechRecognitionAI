@@ -8,24 +8,38 @@ import { setupVite, serveStatic, log } from "./vite.js";
 const app = express();
 
 // Enable trust proxy for all proxies
-// This is safe as we're running behind Coolify's proxy
-app.set('trust proxy', true);
+app.set('trust proxy', 'uniquelocal'); // More specific trust proxy setting
 
-// Security headers with correct proxy settings
+// Security headers with production CSP configuration
 app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      mediaSrc: ["'self'", "blob:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'none'"],
+      "worker-src": ["'self'", "blob:"],
+      upgradeInsecureRequests: null
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // Compression
 app.use(compression());
 
-// Rate limiting with proxy support
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  trustProxy: true // Trust the X-Forwarded-For header
+  standardHeaders: true,
+  legacyHeaders: false
 });
 app.use(limiter);
 
@@ -75,7 +89,7 @@ app.use((req, res, next) => {
 
     // Log error for debugging in production
     if (process.env.NODE_ENV === 'production') {
-      console.error(err);
+      console.error('PDF Generation Error:', err);
     }
 
     res.status(status).json({ message });

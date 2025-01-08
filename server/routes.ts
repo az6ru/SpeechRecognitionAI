@@ -87,21 +87,30 @@ export function registerRoutes(app: Express): Server {
           height: "10mm"
         },
         encoding: 'UTF-8',
-        timeout: 30000, // Увеличенный timeout для больших документов
+        timeout: 30000,
+        phantomPath: process.env.NODE_ENV === 'production' ? '/usr/bin/phantomjs' : undefined,
       };
 
+      // Add error handling for PDF generation
       pdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {
-          return handleError(err, res);
+          console.error("PDF Generation Error:", err);
+          return handleError(new Error("Failed to generate PDF"), res);
         }
 
-        // Настройка кэширования для PDF
-        res.setHeader('Cache-Control', 'public, max-age=60'); // 1 минута кэширования
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=transcription.pdf');
-        res.send(buffer);
+        try {
+          // Set proper headers for PDF download
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', 'attachment; filename=transcription.pdf');
+          res.setHeader('Cache-Control', 'no-cache');
+          res.send(buffer);
+        } catch (error) {
+          console.error("Error sending PDF:", error);
+          handleError(error, res);
+        }
       });
     } catch (error) {
+      console.error("PDF Export Error:", error);
       handleError(error, res);
     }
   });
