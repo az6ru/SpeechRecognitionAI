@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
 import { TranscriptionAnalysis } from "./TranscriptionAnalysis";
+import { TranscriptionTabs } from "./TranscriptionTabs";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
@@ -88,13 +89,20 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
 
   return (
     <div className="space-y-4">
+      {/* Заголовок и кнопки */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-gray-900">
           Результат транскрипции
         </h2>
-        <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} title={title} />
+        <ActionButtons 
+          onCopy={copyToClipboard} 
+          copied={copied} 
+          transcription={transcription} 
+          title={title} 
+        />
       </div>
 
+      {/* Название файла с редактированием */}
       <div className="flex items-center gap-2">
         {isEditing ? (
           <div className="flex items-center gap-2 flex-1">
@@ -146,41 +154,22 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
         </CardContent>
       </Card>
 
-      <Card className="border bg-gray-50">
+      {/* AI Analysis */}
+      <Card>
         <CardContent className="pt-6">
-          {transcription.speakers && transcription.speakers.length > 0 ? (
-            <div className="space-y-6">
-              {transcription.speakers.map((speaker) => (
-                <div
-                  key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
-                  className="space-y-2"
-                >
-                  <p className="text-sm font-bold text-gray-900">
-                    Спикер {speaker.speaker + 1}
-                  </p>
-                  <p className="text-sm leading-relaxed text-gray-600">
-                    {speaker.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
-            <div className="space-y-4">
-              {transcription.paragraphs.map((paragraph, index) => (
-                <p key={index} className="text-sm leading-relaxed text-gray-600">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm leading-relaxed text-gray-600">
-              {transcription.transcript}
-            </p>
-          )}
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            Voice Convert AI
+          </h3>
+          <TranscriptionAnalysis text={transcription.transcript} />
         </CardContent>
       </Card>
 
-      <TranscriptionAnalysis text={transcription.transcript} />
+      {/* Transcription Tabs */}
+      <Card>
+        <CardContent className="pt-6">
+          <TranscriptionTabs transcription={transcription} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -3,8 +3,6 @@ import { useDropzone } from "react-dropzone";
 import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { TranscriptionOptions } from "@/lib/types";
 import AudioPlayer from "./AudioPlayer";
 
@@ -14,7 +12,7 @@ interface FileUploadProps {
 
 const DEFAULT_OPTIONS: TranscriptionOptions = {
   smart_format: true,
-  diarize: false
+  diarize: true
 };
 
 const formatDuration = (seconds: number) => {
@@ -27,7 +25,6 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [options, setOptions] = useState<TranscriptionOptions>(DEFAULT_OPTIONS);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const { toast } = useToast();
@@ -90,7 +87,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
     const formData = new FormData();
     formData.append("audio", selectedFile);
-    formData.append("options", JSON.stringify(options));
+    formData.append("options", JSON.stringify(DEFAULT_OPTIONS));
 
     try {
       const response = await fetch("/api/transcribe", {
@@ -174,38 +171,6 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
             )}
           </div>
 
-          {/* Опции транскрибации */}
-          <div className="space-y-4 border rounded-lg p-4 bg-background">
-            <h4 className="font-medium text-gray-900">Опции транскрибации</h4>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between space-x-2">
-                <div className="space-y-0.5">
-                  <Label className="text-gray-900">Умное форматирование</Label>
-                  <p className="text-sm text-gray-600">
-                    Улучшает читаемость текста: добавляет абзацы, форматирует даты и числа
-                  </p>
-                </div>
-                <Switch
-                  checked={options.smart_format}
-                  onCheckedChange={(checked) => setOptions(prev => ({ ...prev, smart_format: checked }))}
-                />
-              </div>
-
-              <div className="flex items-center justify-between space-x-2">
-                <div className="space-y-0.5">
-                  <Label className="text-gray-900">Определение спикеров</Label>
-                  <p className="text-sm text-gray-600">
-                    Определяет смену говорящих в диалоге
-                  </p>
-                </div>
-                <Switch
-                  checked={options.diarize}
-                  onCheckedChange={(checked) => setOptions(prev => ({ ...prev, diarize: checked }))}
-                />
-              </div>
-            </div>
-          </div>
 
           {/* Загрузка и прогресс */}
           {isUploading && (
