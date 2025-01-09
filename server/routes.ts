@@ -49,93 +49,93 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No audio file provided" });
-    }
+  app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "Файл не был загружен" });
+      }
 
-    const fileSizeMB = req.file.size / (1024 * 1024);
-    const estimatedDuration = fileSizeMB; // Грубая оценка длительности в минутах (1MB ≈ 1 минута)
+      const fileSizeMB = req.file.size / (1024 * 1024);
+      const estimatedDuration = fileSizeMB; // Грубая оценка длительности в минутах (1MB ≈ 1 минута)
 
-    // Проверка длительности для гостей
-    if (!req.isAuthenticated() && estimatedDuration > GUEST_DURATION_LIMIT) {
-      return res.status(403).json({
-        error: `Длительность файла превышает лимит для гостя (${GUEST_DURATION_LIMIT} минут). Зарегистрируйтесь, чтобы транскрибировать файлы большей длительности.`,
-        isGuest: true
-      });
-    }
-
-    // Проверка лимитов для авторизованных пользователей
-    if (req.isAuthenticated()) {
-      const canTranscribe = await canTranscribeFile(req.user.id, estimatedDuration);
-      if (!canTranscribe) {
+      // Проверка длительности для гостей
+      if (!req.isAuthenticated() && estimatedDuration > GUEST_DURATION_LIMIT) {
         return res.status(403).json({
-          error: "Monthly limit exceeded. Please upgrade your subscription to continue."
+          error: `Длительность файла превышает лимит для гостя (${GUEST_DURATION_LIMIT} минут). Зарегистрируйтесь, чтобы транскрибировать файлы большей длительности.`,
+          isGuest: true
         });
       }
-    }
 
-    const defaultOptions = {
-      model: "nova-2",
-      smart_format: true,
-      punctuate: true,
-      numerals: true,
-      detect_language: true
-    };
-
-    let options = { ...defaultOptions };
-
-    try {
-      if (req.body.options) {
-        const parsedOptions = JSON.parse(req.body.options);
-        options = {
-          ...defaultOptions,
-          ...parsedOptions
-        };
+      // Проверка лимитов для авторизованных пользователей
+      if (req.isAuthenticated()) {
+        const canTranscribe = await canTranscribeFile(req.user.id, estimatedDuration);
+        if (!canTranscribe) {
+          return res.status(403).json({
+            error: "Превышен месячный лимит. Обновите подписку, чтобы продолжить."
+          });
+        }
       }
-    } catch (e) {
-      console.warn("Failed to parse transcription options:", e);
-      console.warn("Using default options");
+
+      const defaultOptions = {
+        model: "nova-2",
+        smart_format: true,
+        punctuate: true,
+        numerals: true,
+        detect_language: true
+      };
+
+      let options = { ...defaultOptions };
+
+      try {
+        if (req.body.options) {
+          const parsedOptions = JSON.parse(req.body.options);
+          options = {
+            ...defaultOptions,
+            ...parsedOptions
+          };
+        }
+      } catch (e) {
+        console.warn("Failed to parse transcription options:", e);
+        console.warn("Using default options");
+      }
+
+      console.log('Processing request with options:', JSON.stringify(options, null, 2));
+      const result = await transcribeAudio(req.file.buffer, options);
+
+      // Сохраняем использование только для авторизованных пользователей
+      if (req.isAuthenticated()) {
+        await recordUsage(
+          req.user.id,
+          fileSizeMB,
+          result.duration || estimatedDuration,
+          result.id
+        );
+      }
+
+      // Добавляем флаг isGuest в ответ
+      res.json({
+        ...result,
+        isGuest: !req.isAuthenticated()
+      });
+    } catch (error: any) {
+      console.error("Transcription error:", error);
+      res.status(500).json({
+        error: error.message || "Не удалось транскрибировать аудио файл",
+        isGuest: !req.isAuthenticated()
+      });
     }
-
-    console.log('Processing request with options:', JSON.stringify(options, null, 2));
-    const result = await transcribeAudio(req.file.buffer, options);
-
-    // Сохраняем использование только для авторизованных пользователей
-    if (req.isAuthenticated()) {
-      await recordUsage(
-        req.user.id,
-        fileSizeMB,
-        result.duration || estimatedDuration,
-        result.id
-      );
-    }
-
-    // Добавляем флаг isGuest в ответ
-    res.json({
-      ...result,
-      isGuest: !req.isAuthenticated()
-    });
-  } catch (error: any) {
-    console.error("Transcription error:", error);
-    res.status(500).json({
-      error: error.message || "Failed to transcribe audio",
-      isGuest: !req.isAuthenticated()
-    });
-  }
-});
+  });
 
   // AI processing endpoint
   app.post("/api/process-transcription", async (req, res) => {
     try {
       if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: "Authentication required" });
+        return res.status(401).json({ error: "Требуется авторизация" });
       }
 
       const { text } = req.body;
       if (!text) {
-        return res.status(400).json({ error: "Text content is required" });
+        return res.status(400).json({ error: "Необходим текст для обработки" });
       }
 
       const result = await processTranscription(text);
@@ -143,7 +143,7 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
     } catch (error: any) {
       console.error("AI Processing error:", error);
       res.status(500).json({
-        error: error.message || "Failed to process transcription",
+        error: error.message || "Не удалось обработать транскрипцию",
       });
     }
   });
@@ -152,12 +152,12 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
   app.post("/api/export-pdf", async (req, res) => {
     try {
       if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: "Authentication required" });
+        return res.status(401).json({ error: "Требуется авторизация" });
       }
 
       const { html } = req.body;
       if (!html) {
-        return res.status(400).json({ error: "HTML content is required" });
+        return res.status(400).json({ error: "Необходим HTML контент" });
       }
 
       const options = {
@@ -180,7 +180,7 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
       pdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {
           console.error("PDF generation error:", err);
-          return res.status(500).json({ error: "Failed to generate PDF" });
+          return res.status(500).json({ error: "Не удалось сгенерировать PDF" });
         }
 
         res.setHeader('Content-Type', 'application/pdf');
@@ -189,7 +189,7 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
       });
     } catch (error) {
       console.error("PDF export error:", error);
-      res.status(500).json({ error: "Failed to generate PDF" });
+      res.status(500).json({ error: "Не удалось сгенерировать PDF" });
     }
   });
 

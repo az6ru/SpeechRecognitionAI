@@ -118,13 +118,14 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
       setUploadProgress(100);
       const result = await response.json();
 
+      onTranscriptionComplete(result, selectedFile.name); //Original order preserved
+
       // Если пользователь гость и транскрибация успешна,
       // показываем диалог регистрации
       if (result.isGuest) {
         setShowSignupDialog(true);
       }
 
-      onTranscriptionComplete(result, selectedFile.name);
       toast({
         title: "Успех",
         description: "Аудио успешно транскрибировано",
