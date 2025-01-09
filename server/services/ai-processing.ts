@@ -33,9 +33,9 @@ export async function processTranscription(text: string): Promise<ProcessedTrans
     ${text}
     `;
 
-    // Using gpt-4o-mini model as requested
+    // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" },
     });

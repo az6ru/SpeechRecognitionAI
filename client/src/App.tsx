@@ -1,39 +1,21 @@
 import { Switch, Route } from "wouter";
 import { lazy, Suspense } from "react";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useUser } from "@/hooks/use-user";
-import { Header } from "@/components/Header";
+import { Loader2 } from "lucide-react";
 
 const Home = lazy(() => import("./pages/Home.tsx"));
-const AuthPage = lazy(() => import("./pages/AuthPage.tsx"));
 
 function App() {
-  const { isLoading } = useUser();
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1">
-        <Switch>
-          <Route path="/" component={() => (
-            <Suspense fallback={<LoadingSpinner />}>
-              <Home />
-            </Suspense>
-          )} />
-          <Route path="/auth" component={() => (
-            <Suspense fallback={<LoadingSpinner />}>
-              <AuthPage />
-            </Suspense>
-          )} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-    </div>
+    <Switch>
+      <Route path="/" component={() => (
+        <Suspense fallback={<LoadingSpinner />}>
+          <Home />
+        </Suspense>
+      )} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 

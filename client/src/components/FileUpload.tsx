@@ -5,7 +5,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { TranscriptionOptions } from "@/lib/types";
 import AudioPlayer from "./AudioPlayer";
-import { PromoteSignupDialog } from "./PromoteSignupDialog";
 
 interface FileUploadProps {
   onTranscriptionComplete: (result: any, fileName: string) => void;
@@ -20,15 +19,12 @@ const calculateCost = (duration: number) => {
   return Math.ceil(duration / 60);
 };
 
-const GUEST_DURATION_LIMIT = 10; // 10 минут для гостей
-
 export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
-  const [showSignupDialog, setShowSignupDialog] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -51,21 +47,6 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
       await new Promise((resolve, reject) => {
         audio.addEventListener('loadedmetadata', () => {
-          const durationMinutes = audio.duration / 60;
-
-          // Проверка длительности для гостей
-          if (durationMinutes > GUEST_DURATION_LIMIT) {
-            toast({
-              variant: "destructive",
-              title: "Ошибка",
-              description: `Длительность файла превышает лимит для гостя (${GUEST_DURATION_LIMIT} минут). Зарегистрируйтесь, чтобы транскрибировать файлы большей длительности.`,
-            });
-            setShowSignupDialog(true);
-            URL.revokeObjectURL(url);
-            reject(new Error("Duration limit exceeded"));
-            return;
-          }
-
           setAudioDuration(audio.duration);
           URL.revokeObjectURL(url);
           resolve(null);
@@ -76,13 +57,11 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
       setSelectedFile(file);
     } catch (error) {
-      if (!(error instanceof Error && error.message === "Duration limit exceeded")) {
-        toast({
-          variant: "destructive",
-          title: "Ошибка",
-          description: "Не удалось загрузить аудио файл",
-        });
-      }
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Не удалось загрузить аудио файл",
+      });
     } finally {
       setIsProcessingFile(false);
     }
@@ -111,37 +90,22 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to transcribe audio');
+        throw new Error(`Error: ${response.statusText}`);
       }
 
       setUploadProgress(100);
       const result = await response.json();
-
-      onTranscriptionComplete(result, selectedFile.name); //Original order preserved
-
-      // Если пользователь гость и транскрибация успешна,
-      // показываем диалог регистрации
-      if (result.isGuest) {
-        setShowSignupDialog(true);
-      }
-
+      onTranscriptionComplete(result, selectedFile.name);
       toast({
         title: "Успех",
         description: "Аудио успешно транскрибировано",
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Ошибка",
-        description: error.message || "Не удалось транскрибировать аудио файл",
+        description: "Не удалось транскрибировать аудио файл",
       });
-
-      // Если ошибка связана с ограничением гостевого доступа,
-      // показываем диалог регистрации
-      if (error.message?.includes('гостя')) {
-        setShowSignupDialog(true);
-      }
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -182,7 +146,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
               : "Перетащите аудио файл или нажмите для выбора"}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG. Максимальная длительность для гостей - {GUEST_DURATION_LIMIT} минут
+            Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
           </p>
         </div>
       </div>
@@ -221,18 +185,12 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
                   Обработка...
                 </>
               ) : (
-                `Транскрибировать за ${calculateCost(audioDuration / 60)} руб.`
+                `Транскрибировать за ${calculateCost(audioDuration)} руб.`
               )}
             </Button>
           )}
         </>
       )}
-
-      {/* Диалог с предложением регистрации */}
-      <PromoteSignupDialog 
-        open={showSignupDialog} 
-        onOpenChange={setShowSignupDialog}
-      />
     </div>
   );
 }
