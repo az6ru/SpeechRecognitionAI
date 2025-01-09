@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { TranscriptionResponse, TranscriptionOptions } from "@/lib/types";
 import TranscriptionOptionsForm from "./TranscriptionOptionsForm";
 import AudioPlayer from "./AudioPlayer";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface FileUploadProps {
   onTranscriptionComplete: (result: TranscriptionResponse) => void;
@@ -113,88 +112,59 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
     <div className="space-y-6">
       <TranscriptionOptionsForm options={options} onChange={setOptions} />
 
-      <motion.div
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.99 }}
+      <div
+        {...getRootProps()}
+        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+          ${isDragActive ? 'border-primary bg-primary/5' : isProcessingFile ? 'border-gray-300 cursor-not-allowed opacity-50' : 'border-gray-300 hover:border-primary'}
+        `}
       >
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-            ${isDragActive ? 'border-primary bg-primary/5' : isProcessingFile ? 'border-gray-300 cursor-not-allowed opacity-50' : 'border-gray-300 hover:border-primary'}
-          `}
-        >
-          <input {...getInputProps()} />
-          <AnimatePresence mode="wait">
-            {isProcessingFile ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Loader2 className="mx-auto h-12 w-12 text-gray-400 animate-spin" />
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <p className="mt-2 text-sm text-gray-600">
-            {isProcessingFile
-              ? "Обработка файла..."
-              : isDragActive
-              ? "Перетащите аудио файл сюда"
-              : "Перетащите аудио файл или нажмите для выбора"}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
-          </p>
-        </div>
-      </motion.div>
-
-      <AnimatePresence>
-        {selectedFile && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="bg-gray-50 rounded-lg p-4 space-y-4"
-          >
-            <p className="text-sm text-gray-600">
-              Выбранный файл: {selectedFile.name}
-            </p>
-
-            <AudioPlayer file={selectedFile} />
-
-            {audioDuration && (
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">
-                  Длительность: {Math.round(audioDuration)} секунд
-                </p>
-                <p className="text-sm text-gray-600">
-                  Стоимость: {calculateCost(audioDuration)} руб.
-                </p>
-              </div>
-            )}
-
-            <Button
-              onClick={handleTranscribe}
-              disabled={isUploading}
-              className="w-full"
-            >
-              {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {isUploading ? "Обработка..." : "Транскрибировать"}
-            </Button>
-          </motion.div>
+        <input {...getInputProps()} />
+        {isProcessingFile ? (
+          <Loader2 className="mx-auto h-12 w-12 text-gray-400 animate-spin" />
+        ) : (
+          <Upload className="mx-auto h-12 w-12 text-gray-400" />
         )}
-      </AnimatePresence>
+        <p className="mt-2 text-sm text-gray-600">
+          {isProcessingFile
+            ? "Обработка файла..."
+            : isDragActive
+            ? "Перетащите аудио файл сюда"
+            : "Перетащите аудио файл или нажмите для выбора"}
+        </p>
+        <p className="text-xs text-gray-500 mt-1">
+          Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
+        </p>
+      </div>
+
+      {selectedFile && (
+        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+          <p className="text-sm text-gray-600">
+            Выбранный файл: {selectedFile.name}
+          </p>
+
+          <AudioPlayer file={selectedFile} />
+
+          {audioDuration && (
+            <div className="space-y-2">
+              <p className="text-sm text-gray-600">
+                Длительность: {Math.round(audioDuration)} секунд
+              </p>
+              <p className="text-sm text-gray-600">
+                Стоимость: {calculateCost(audioDuration)} руб.
+              </p>
+            </div>
+          )}
+
+          <Button
+            onClick={handleTranscribe}
+            disabled={isUploading}
+            className="w-full"
+          >
+            {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+            {isUploading ? "Обработка..." : "Транскрибировать"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

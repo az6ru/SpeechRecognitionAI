@@ -4,7 +4,6 @@ import { Mic } from "lucide-react";
 import type { TranscriptionResponse } from "@/lib/types";
 import { FileUpload } from "@/components/FileUpload";
 import { TranscriptionResult } from "@/components/TranscriptionResult";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const [transcription, setTranscription] = useState<TranscriptionResponse | null>(null);
@@ -12,12 +11,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
-        >
+        <div className="text-center">
           <div className="flex items-center justify-center mb-4">
             <Mic className="h-12 w-12 text-primary" />
           </div>
@@ -27,46 +21,27 @@ export default function Home() {
           <p className="mt-4 text-lg text-gray-600">
             Загрузите аудиофайл и получите точную транскрипцию с помощью Deepgram
           </p>
-        </motion.div>
+        </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key="upload"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Загрузка аудио</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FileUpload onTranscriptionComplete={setTranscription} />
-              </CardContent>
-            </Card>
-          </motion.div>
-        </AnimatePresence>
+        <Card>
+          <CardHeader>
+            <CardTitle>Загрузка аудио</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FileUpload onTranscriptionComplete={setTranscription} />
+          </CardContent>
+        </Card>
 
-        <AnimatePresence>
-          {transcription && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>Результат транскрипции</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <TranscriptionResult transcription={transcription} />
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {transcription && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Результат транскрипции</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TranscriptionResult transcription={transcription} />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
