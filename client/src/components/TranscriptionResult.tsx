@@ -88,88 +88,82 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
   }
 
   return (
-    <div className="space-y-4">
-      {/* Заголовок и кнопки */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-gray-900">
-          Результат транскрипции
-        </h2>
-        <ActionButtons 
-          onCopy={copyToClipboard} 
-          copied={copied} 
-          transcription={transcription} 
-          title={title} 
-        />
+    <div className="space-y-6">
+      <TranscriptionAnalysis text={transcription.transcript} />
+
+      <div className="space-y-4">
+        {/* Заголовок и кнопки */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Результат транскрипции
+          </h2>
+          <ActionButtons 
+            onCopy={copyToClipboard} 
+            copied={copied} 
+            transcription={transcription} 
+            title={title} 
+          />
+        </div>
+
+        {/* Название файла с редактированием */}
+        <div className="flex items-center gap-2">
+          {isEditing ? (
+            <div className="flex items-center gap-2 flex-1">
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="max-w-md"
+                autoFocus
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditing(false)}
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <p className="text-lg text-gray-700">{title}</p>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Метаданные транскрипции */}
+        <Card className="border bg-gray-50">
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <p className="text-gray-500">Длительность аудио</p>
+                <p className="font-medium">{transcription.duration ? formatDuration(transcription.duration) : 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Точность распознавания</p>
+                <p className="font-medium">{transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Язык</p>
+                <p className="font-medium">{transcription.detected_language || 'N/A'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Transcription Tabs */}
+        <Card>
+          <CardContent className="pt-6">
+            <TranscriptionTabs transcription={transcription} />
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Название файла с редактированием */}
-      <div className="flex items-center gap-2">
-        {isEditing ? (
-          <div className="flex items-center gap-2 flex-1">
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="max-w-md"
-              autoFocus
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsEditing(false)}
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <p className="text-lg text-gray-700">{title}</p>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsEditing(true)}
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Метаданные транскрипции */}
-      <Card className="border bg-gray-50">
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <div>
-              <p className="text-gray-500">Длительность аудио</p>
-              <p className="font-medium">{transcription.duration ? formatDuration(transcription.duration) : 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Точность распознавания</p>
-              <p className="font-medium">{transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Язык</p>
-              <p className="font-medium">{transcription.detected_language || 'N/A'}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI Analysis */}
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">
-            Voice Convert AI
-          </h3>
-          <TranscriptionAnalysis text={transcription.transcript} />
-        </CardContent>
-      </Card>
-
-      {/* Transcription Tabs */}
-      <Card>
-        <CardContent className="pt-6">
-          <TranscriptionTabs transcription={transcription} />
-        </CardContent>
-      </Card>
     </div>
   );
 }
