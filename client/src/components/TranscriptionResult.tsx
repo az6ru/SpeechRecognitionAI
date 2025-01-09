@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
-import { TranscriptionTabs } from "./TranscriptionTabs";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
@@ -86,24 +86,7 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
 
   return (
     <Card>
-      <CardHeader className="pb-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2">
-            <Badge variant="secondary">
-              Точность: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}
-            </Badge>
-            <Badge variant="secondary">
-              Язык: {transcription.detected_language || 'N/A'}
-            </Badge>
-          </div>
-          <ActionButtons 
-            onCopy={copyToClipboard} 
-            copied={copied} 
-            transcription={transcription} 
-            title={title}
-            activeTab={activeTab}
-          />
-        </div>
+      <CardHeader>
         {isEditing ? (
           <div className="flex items-center gap-2">
             <Input
@@ -122,7 +105,7 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <p className="text-xl font-bold text-gray-900">{title}</p>
+            <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
             <Button
               variant="ghost"
               size="icon"
@@ -132,14 +115,65 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
             </Button>
           </div>
         )}
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[500px] rounded-md border p-4">
-          <TranscriptionTabs 
+        <div className="flex items-center justify-between mt-4">
+          <div className="flex gap-2">
+            <Badge variant="secondary">
+              Точность: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}
+            </Badge>
+            <Badge variant="secondary">
+              Язык: {transcription.detected_language || 'N/A'}
+            </Badge>
+          </div>
+          <ActionButtons 
+            onCopy={copyToClipboard} 
+            copied={copied} 
             transcription={transcription} 
-            onTabChange={setActiveTab}
+            title={title}
+            activeTab={activeTab}
           />
-        </ScrollArea>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <Tabs defaultValue="raw" className="w-full" onValueChange={setActiveTab}>
+          <TabsList className="w-full mb-4">
+            <TabsTrigger value="raw" className="flex-1">Транскрипция</TabsTrigger>
+            <TabsTrigger value="formatted" className="flex-1">Умное форматирование</TabsTrigger>
+            <TabsTrigger value="speakers" className="flex-1">Спикеры</TabsTrigger>
+          </TabsList>
+          <ScrollArea className="h-[500px] rounded-md border p-4">
+            <TabsContent value="raw">
+              <p className="text-sm leading-relaxed text-gray-600">
+                {transcription.transcript}
+              </p>
+            </TabsContent>
+            <TabsContent value="formatted">
+              <div className="space-y-4">
+                {transcription.paragraphs?.map((paragraph, index) => (
+                  <p key={index} className="text-sm leading-relaxed text-gray-600">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="speakers">
+              <div className="space-y-6">
+                {transcription.speakers?.map((speaker) => (
+                  <div
+                    key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
+                    className="space-y-2"
+                  >
+                    <p className="text-sm font-bold text-gray-900">
+                      Спикер {speaker.speaker + 1}
+                    </p>
+                    <p className="text-sm leading-relaxed text-gray-600">
+                      {speaker.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          </ScrollArea>
+        </Tabs>
       </CardContent>
     </Card>
   );
