@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
 import { TranscriptionTabs } from "./TranscriptionTabs";
+import { TranscriptionAnalysis } from "./TranscriptionAnalysis";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
@@ -81,61 +83,67 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Результат транскрипции
-          </h2>
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <span>Точность распознавания: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</span>
-            <span>Язык: {transcription.detected_language || 'N/A'}</span>
+    <div className="space-y-8">
+      {/* Voice Convert AI Analysis */}
+      <TranscriptionAnalysis text={getActiveText()} />
+
+      {/* Transcription Results */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-6">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              Результат транскрипции
+            </h2>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span>Точность распознавания: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</span>
+              <span>Язык: {transcription.detected_language || 'N/A'}</span>
+            </div>
           </div>
+          <ActionButtons 
+            onCopy={copyToClipboard} 
+            copied={copied} 
+            transcription={transcription} 
+            title={title}
+            activeTab={activeTab}
+          />
         </div>
-        <ActionButtons 
-          onCopy={copyToClipboard} 
-          copied={copied} 
+
+        <div className="mb-4">
+          {isEditing ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="max-w-md"
+                autoFocus
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditing(false)}
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <p className="text-lg text-gray-700">{title}</p>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <TranscriptionTabs 
           transcription={transcription} 
-          title={title}
-          activeTab={activeTab}
+          onTabChange={setActiveTab}
         />
       </div>
-
-      <div className="flex items-center gap-2">
-        {isEditing ? (
-          <div className="flex items-center gap-2 flex-1">
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="max-w-md"
-              autoFocus
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsEditing(false)}
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <p className="text-lg text-gray-700">{title}</p>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsEditing(true)}
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <TranscriptionTabs 
-        transcription={transcription} 
-        onTabChange={setActiveTab}
-      />
     </div>
   );
 }
