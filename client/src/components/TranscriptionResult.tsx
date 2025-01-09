@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
 import { TranscriptionTabs } from "./TranscriptionTabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
@@ -84,70 +85,62 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
   }
 
   return (
-    <div className="space-y-4">
-      {/* Заголовок */}
-      <div className="flex flex-col">
-        <h2 className="text-2xl font-bold text-gray-900">Транскрибация</h2>
-        <div className="h-1 w-20 bg-primary mt-2"></div>
-      </div>
-
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex gap-2">
-                <Badge variant="secondary">
-                  Точность: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}
-                </Badge>
-                <Badge variant="secondary">
-                  Язык: {transcription.detected_language || 'N/A'}
-                </Badge>
-              </div>
-            </div>
-            <ActionButtons 
-              onCopy={copyToClipboard} 
-              copied={copied} 
-              transcription={transcription} 
-              title={title}
-              activeTab={activeTab}
-            />
+    <Card>
+      <CardHeader className="pb-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2">
+            <Badge variant="secondary">
+              Точность: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}
+            </Badge>
+            <Badge variant="secondary">
+              Язык: {transcription.detected_language || 'N/A'}
+            </Badge>
           </div>
-          {isEditing ? (
-            <div className="flex items-center gap-2 mt-2">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="max-w-md"
-                autoFocus
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(false)}
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 mt-2">
-              <p className="text-lg text-gray-700">{title}</p>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </CardHeader>
-        <CardContent>
+          <ActionButtons 
+            onCopy={copyToClipboard} 
+            copied={copied} 
+            transcription={transcription} 
+            title={title}
+            activeTab={activeTab}
+          />
+        </div>
+        {isEditing ? (
+          <div className="flex items-center gap-2">
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="max-w-md"
+              autoFocus
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(false)}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <p className="text-xl font-bold text-gray-900">{title}</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[500px] rounded-md border p-4">
           <TranscriptionTabs 
             transcription={transcription} 
             onTabChange={setActiveTab}
           />
-        </CardContent>
-      </Card>
-    </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
   );
 }
