@@ -28,7 +28,7 @@ function ActionButtons({ onCopy, copied, transcription }: ActionButtonsProps) {
         {copied ? (
           <>
             <CheckCircle className="h-4 w-4" />
-            Скопировано
+            Копировать текст
           </>
         ) : (
           <>
@@ -76,48 +76,47 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
   }
 
   return (
-    <Card>
+    <Card className="border">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg font-semibold tracking-tight">
+        <CardTitle className="text-lg font-medium">
           Результат транскрипции
         </CardTitle>
         <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
       </CardHeader>
-      <CardContent className="prose-custom max-w-none pt-0">
-        {transcription.speakers && transcription.speakers.length > 0 ? (
-          <div className="space-y-4">
-            {transcription.speakers.map((speaker) => (
-              <Card
-                key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
-                className={cn(
-                  "border shadow-sm transition-colors duration-200"
-                )}
-              >
-                <CardContent className="pt-6">
-                  <div className="font-medium mb-4 flex items-center gap-2">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-semibold">
-                      {speaker.speaker + 1}
-                    </span>
-                    <span className="text-sm">Спикер {speaker.speaker + 1}</span>
+      <CardContent className="pt-0">
+        <Card className="border bg-muted/10">
+          <CardContent className="pt-4">
+            {transcription.speakers && transcription.speakers.length > 0 ? (
+              <div className="space-y-4">
+                {transcription.speakers.map((speaker) => (
+                  <div
+                    key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
+                    className="space-y-1"
+                  >
+                    <p className="text-sm font-medium text-foreground">
+                      Спикер {speaker.speaker + 1}
+                    </p>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {speaker.text}
+                    </p>
                   </div>
-                  <p className="leading-7 text-muted-foreground">{speaker.text}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
-          <div className="space-y-4">
-            {transcription.paragraphs.map((paragraph, index) => (
-              <p key={index} className="leading-7 text-muted-foreground">
-                {paragraph}
+                ))}
+              </div>
+            ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
+              <div className="space-y-4">
+                {transcription.paragraphs.map((paragraph, index) => (
+                  <p key={index} className="text-sm leading-relaxed text-muted-foreground">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {transcription.transcript}
               </p>
-            ))}
-          </div>
-        ) : (
-          <p className="leading-7 text-muted-foreground">
-            {transcription.transcript}
-          </p>
-        )}
+            )}
+          </CardContent>
+        </Card>
       </CardContent>
     </Card>
   );
