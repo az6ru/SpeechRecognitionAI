@@ -3,11 +3,12 @@ import type { TranscriptionResponse } from "@/lib/types";
 
 interface TranscriptionTabsProps {
   transcription: TranscriptionResponse;
+  onTabChange?: (value: string) => void;
 }
 
-export function TranscriptionTabs({ transcription }: TranscriptionTabsProps) {
+export function TranscriptionTabs({ transcription, onTabChange }: TranscriptionTabsProps) {
   return (
-    <Tabs defaultValue="raw" className="w-full">
+    <Tabs defaultValue="raw" className="w-full" onValueChange={onTabChange}>
       <TabsList className="w-full">
         <TabsTrigger value="raw" className="flex-1">Транскрипция</TabsTrigger>
         <TabsTrigger value="formatted" className="flex-1">Умное форматирование</TabsTrigger>

@@ -14,23 +14,23 @@ import type { TranscriptionResponse } from "@/lib/types";
 interface ExportButtonProps {
   transcription: TranscriptionResponse;
   title: string;
+  activeTab: string;
 }
 
-export function ExportButton({ transcription, title }: ExportButtonProps) {
+export function ExportButton({ transcription, title, activeTab }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const formatTextWithSpeakers = () => {
-    let text = `${title}\n\n`;
-    if (transcription.speakers && transcription.speakers.length > 0) {
-      text += transcription.speakers
-        .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}`)
-        .join('\n\n');
-    } else if (transcription.paragraphs && transcription.paragraphs.length > 0) {
-      text += transcription.paragraphs.join('\n\n');
-    } else {
-      text += transcription.transcript;
+    switch (activeTab) {
+      case "formatted":
+        return transcription.paragraphs?.join('\n\n') || transcription.transcript;
+      case "speakers":
+        return transcription.speakers
+          ?.map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}`)
+          .join('\n\n');
+      default:
+        return transcription.transcript;
     }
-    return text;
   };
 
   const exportAsPDF = async () => {
@@ -178,7 +178,7 @@ export function ExportButton({ transcription, title }: ExportButtonProps) {
                   after: 300,
                 },
               }),
-            ]).flat() || transcription.paragraphs?.map((para) => 
+            ]).flat() || transcription.paragraphs?.map((para) =>
               new Paragraph({
                 children: [
                   new TextRun({

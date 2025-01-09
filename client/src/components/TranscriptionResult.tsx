@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
-import { TranscriptionAnalysis } from "./TranscriptionAnalysis";
 import { TranscriptionTabs } from "./TranscriptionTabs";
 
 interface TranscriptionResultProps {
@@ -18,9 +17,10 @@ interface ActionButtonsProps {
   copied: boolean;
   transcription: TranscriptionResponse;
   title: string;
+  activeTab: string;
 }
 
-function ActionButtons({ onCopy, copied, transcription, title }: ActionButtonsProps) {
+function ActionButtons({ onCopy, copied, transcription, title, activeTab }: ActionButtonsProps) {
   return (
     <div className="flex gap-2">
       <Button
@@ -41,7 +41,7 @@ function ActionButtons({ onCopy, copied, transcription, title }: ActionButtonsPr
           </>
         )}
       </Button>
-      <ExportButton transcription={transcription} title={title} />
+      <ExportButton transcription={transcription} title={title} activeTab={activeTab} />
     </div>
   );
 }
@@ -50,21 +50,23 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(fileName?.replace(/\.[^/.]+$/, "") || "Новая транскрипция");
+  const [activeTab, setActiveTab] = useState("raw");
 
-  const formatText = () => {
-    if (transcription.speakers && transcription.speakers.length > 0) {
-      return transcription.speakers
-        .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}`)
-        .join('\n\n');
+  const getActiveText = () => {
+    switch (activeTab) {
+      case "formatted":
+        return transcription.paragraphs?.join('\n\n') || transcription.transcript;
+      case "speakers":
+        return transcription.speakers
+          ?.map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}`)
+          .join('\n\n') || transcription.transcript;
+      default:
+        return transcription.transcript;
     }
-    if (transcription.paragraphs && transcription.paragraphs.length > 0) {
-      return transcription.paragraphs.join('\n\n');
-    }
-    return transcription.transcript;
   };
 
   const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(formatText());
+    await navigator.clipboard.writeText(getActiveText());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -82,17 +84,24 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
   }
 
   return (
-    <div className="space-y-8">
+    <>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Результат транскрипции
-          </h2>
+          <div className="flex items-center gap-6">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              Результат транскрипции
+            </h2>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span>Точность распознавания: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</span>
+              <span>Язык: {transcription.detected_language || 'N/A'}</span>
+            </div>
+          </div>
           <ActionButtons 
             onCopy={copyToClipboard} 
             copied={copied} 
             transcription={transcription} 
-            title={title} 
+            title={title}
+            activeTab={activeTab}
           />
         </div>
 
@@ -127,29 +136,15 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
           )}
         </div>
 
-        <Card className="border bg-gray-50">
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-gray-500">Точность распознавания</p>
-                <p className="font-medium">{transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-gray-500">Язык</p>
-                <p className="font-medium">{transcription.detected_language || 'N/A'}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <TranscriptionTabs transcription={transcription} />
-          </CardContent>
-        </Card>
+        <TranscriptionTabs 
+          transcription={transcription} 
+          onTabChange={setActiveTab}
+        />
       </div>
 
-      <TranscriptionAnalysis text={transcription.transcript} />
-    </div>
+      <div className="mt-8">
+        <TranscriptionAnalysis text={getActiveText()} />
+      </div>
+    </>
   );
 }
