@@ -46,20 +46,22 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
           <style>
             body { 
               font-family: 'Inter', Arial, sans-serif; 
-              padding: 15px;
+              padding: 8px 15px;
               font-size: 10px;
               line-height: 1.4;
             }
-            h1 { 
-              font-size: 16px; 
-              text-align: center; 
-              margin-bottom: 15px;
-              font-weight: bold;
-            }
-            .title {
+            .app-title {
               font-size: 14px;
+              font-weight: bold;
+              color: #1a1a1a;
               margin-bottom: 12px;
-              font-weight: 500;
+              text-align: left;
+            }
+            .doc-title {
+              font-size: 11px;
+              font-weight: 600;
+              color: #4a4a4a;
+              margin-bottom: 10px;
             }
             .content { 
               margin-bottom: 6px;
@@ -69,8 +71,8 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
           </style>
         </head>
         <body>
-          <h1>Транскрибация</h1>
-          <div class="title">${title}</div>
+          <div class="app-title">Voice Converter - Быстрый cервис распознавания речи</div>
+          <div class="doc-title">${title}</div>
           <div class="content">${formattedText}</div>
         </body>
         </html>
@@ -106,10 +108,10 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
           properties: {},
           children: [
             new Paragraph({
-              text: "Транскрибация",
+              text: "Voice Converter - Быстрый cервис распознавания речи",
               heading: HeadingLevel.HEADING_1,
               spacing: {
-                after: 400,
+                after: 200,
                 line: 360,
               },
             }),
@@ -117,7 +119,7 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
               children: [
                 new TextRun({
                   text: title,
-                  size: 28,
+                  size: 22,
                   bold: true,
                 }),
               ],
