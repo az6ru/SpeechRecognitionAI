@@ -18,6 +18,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
         <div className="text-center">
           <div className="flex items-center justify-center mb-4">
             <Mic className="h-12 w-12 text-primary" />
@@ -31,18 +32,23 @@ export default function Home() {
           </p>
         </div>
 
+        {/* File Upload */}
         <Card>
           <CardContent className="pt-6">
             <FileUpload onTranscriptionComplete={handleTranscriptionComplete} />
           </CardContent>
         </Card>
 
+        {/* Results */}
         {transcription && (
           <div className="space-y-8">
+            {/* Transcription Results */}
             <TranscriptionResult 
               transcription={transcription} 
               fileName={transcriptionFileName} 
             />
+
+            {/* Voice Convert AI Analysis */}
             <Card>
               <CardContent className="pt-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">

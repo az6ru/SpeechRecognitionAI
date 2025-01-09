@@ -83,67 +83,63 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
   }
 
   return (
-    <div className="space-y-8">
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <CardTitle>Результат транскрипции</CardTitle>
-              <div className="flex gap-2">
-                <Badge variant="secondary">
-                  Точность: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}
-                </Badge>
-                <Badge variant="secondary">
-                  Язык: {transcription.detected_language || 'N/A'}
-                </Badge>
-              </div>
+    <Card>
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <CardTitle>Результат транскрипции</CardTitle>
+            <div className="flex gap-2">
+              <Badge variant="secondary">
+                Точность: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}
+              </Badge>
+              <Badge variant="secondary">
+                Язык: {transcription.detected_language || 'N/A'}
+              </Badge>
             </div>
-            <ActionButtons 
-              onCopy={copyToClipboard} 
-              copied={copied} 
-              transcription={transcription} 
-              title={title}
-              activeTab={activeTab}
-            />
           </div>
-          {isEditing ? (
-            <div className="flex items-center gap-2 mt-2">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="max-w-md"
-                autoFocus
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(false)}
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 mt-2">
-              <p className="text-lg text-gray-700">{title}</p>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </CardHeader>
-        <CardContent>
-          <TranscriptionTabs 
+          <ActionButtons 
+            onCopy={copyToClipboard} 
+            copied={copied} 
             transcription={transcription} 
-            onTabChange={setActiveTab}
+            title={title}
+            activeTab={activeTab}
           />
-        </CardContent>
-      </Card>
-      {/* Voice Convert AI Analysis */}
-      <TranscriptionAnalysis text={getActiveText()} />
-    </div>
+        </div>
+        {isEditing ? (
+          <div className="flex items-center gap-2 mt-2">
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="max-w-md"
+              autoFocus
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(false)}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 mt-2">
+            <p className="text-lg text-gray-700">{title}</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </CardHeader>
+      <CardContent>
+        <TranscriptionTabs 
+          transcription={transcription} 
+          onTabChange={setActiveTab}
+        />
+      </CardContent>
+    </Card>
   );
 }
