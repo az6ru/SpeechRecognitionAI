@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -45,28 +45,45 @@ export function TranscriptionAnalysis({ text }: TranscriptionAnalysisProps) {
 
   if (!analysis && !isLoading) {
     return (
-      <div className="mt-4">
-        <Button onClick={() => analyzeTranscription()}>
-          Анализировать транскрипцию
-        </Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Voice Convert AI</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={() => analyzeTranscription()}>
+            Анализировать транскрипцию
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-sm text-muted-foreground">
-          Анализ транскрипции...
-        </span>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Voice Convert AI</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground">
+                Анализ транскрипции...
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardHeader>
+        <CardTitle>Voice Convert AI</CardTitle>
+      </CardHeader>
+      <CardContent>
         <Tabs defaultValue="summary" className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="summary" className="flex-1">Краткое содержание</TabsTrigger>

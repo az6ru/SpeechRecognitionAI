@@ -60,7 +60,7 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
       case "speakers":
         return transcription.speakers
           ?.map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}`)
-          .join('\n\n') || transcription.transcript;
+          .join('\n\n');
       default:
         return transcription.transcript;
     }
