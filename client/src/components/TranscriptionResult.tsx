@@ -41,6 +41,12 @@ function ActionButtons({ onCopy, copied, transcription }: ActionButtonsProps) {
   );
 }
 
+const formatDuration = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
 export function TranscriptionResult({ transcription }: TranscriptionResultProps) {
   const [copied, setCopied] = useState(false);
 
@@ -82,6 +88,26 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
         </h2>
         <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
       </div>
+
+      {/* Метаданные транскрипции */}
+      <Card className="border bg-gray-50">
+        <CardContent className="pt-4">
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <p className="text-gray-500">Длительность аудио</p>
+              <p className="font-medium">{transcription.duration ? formatDuration(transcription.duration) : 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Точность распознавания</p>
+              <p className="font-medium">{transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Язык</p>
+              <p className="font-medium">{transcription.detected_language || 'N/A'}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border bg-gray-50">
         <CardContent className="pt-6">
