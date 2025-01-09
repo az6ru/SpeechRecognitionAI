@@ -9,10 +9,13 @@ import { db } from "@db";
 import { usageRecords } from "@db/schema";
 import { canTranscribeFile, recordUsage } from "./services/subscription.js";
 
+const GUEST_FILE_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB для гостей
+const AUTH_FILE_SIZE_LIMIT = 50 * 1024 * 1024; // 50MB для авторизованных пользователей
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
+    fileSize: AUTH_FILE_SIZE_LIMIT,
   },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith('audio/')) {
@@ -24,7 +27,6 @@ const upload = multer({
 });
 
 export function registerRoutes(app: Express): Server {
-  // Setup authentication routes
   setupAuth(app);
 
   // Get user's transcription history
@@ -48,24 +50,29 @@ export function registerRoutes(app: Express): Server {
 
   app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-
       if (!req.file) {
         return res.status(400).json({ error: "No audio file provided" });
       }
 
-      // Calculate file size in MB and estimated duration (assuming 1MB ≈ 1 minute for basic check)
-      const fileSizeMB = req.file.size / (1024 * 1024);
-      const estimatedDuration = fileSizeMB; // This is a rough estimate
-
-      // Check if user can transcribe this file
-      const canTranscribe = await canTranscribeFile(req.user.id, estimatedDuration);
-      if (!canTranscribe) {
-        return res.status(403).json({ 
-          error: "Monthly limit exceeded. Please upgrade your subscription to continue."
+      // Проверка размера файла для гостей
+      if (!req.isAuthenticated() && req.file.size > GUEST_FILE_SIZE_LIMIT) {
+        return res.status(403).json({
+          error: "File size exceeds guest limit. Please register to upload larger files.",
+          isGuest: true
         });
+      }
+
+      // Проверка лимитов для авторизованных пользователей
+      if (req.isAuthenticated()) {
+        const fileSizeMB = req.file.size / (1024 * 1024);
+        const estimatedDuration = fileSizeMB; // Грубая оценка
+
+        const canTranscribe = await canTranscribeFile(req.user.id, estimatedDuration);
+        if (!canTranscribe) {
+          return res.status(403).json({
+            error: "Monthly limit exceeded. Please upgrade your subscription to continue."
+          });
+        }
       }
 
       const defaultOptions = {
@@ -94,19 +101,27 @@ export function registerRoutes(app: Express): Server {
       console.log('Processing request with options:', JSON.stringify(options, null, 2));
       const result = await transcribeAudio(req.file.buffer, options);
 
-      // Record usage after successful transcription
-      await recordUsage(
-        req.user.id,
-        fileSizeMB,
-        result.duration || estimatedDuration,
-        result.id
-      );
+      // Сохраняем использование только для авторизованных пользователей
+      if (req.isAuthenticated()) {
+        const fileSizeMB = req.file.size / (1024 * 1024);
+        await recordUsage(
+          req.user.id,
+          fileSizeMB,
+          result.duration || fileSizeMB,
+          result.id
+        );
+      }
 
-      res.json(result);
+      // Добавляем флаг isGuest в ответ
+      res.json({
+        ...result,
+        isGuest: !req.isAuthenticated()
+      });
     } catch (error: any) {
       console.error("Transcription error:", error);
       res.status(500).json({
         error: error.message || "Failed to transcribe audio",
+        isGuest: !req.isAuthenticated()
       });
     }
   });
