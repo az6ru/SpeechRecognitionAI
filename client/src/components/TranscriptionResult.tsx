@@ -46,12 +46,6 @@ function ActionButtons({ onCopy, copied, transcription, title }: ActionButtonsPr
   );
 }
 
-const formatDuration = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-};
-
 export function TranscriptionResult({ transcription, fileName }: TranscriptionResultProps) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -88,11 +82,8 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
   }
 
   return (
-    <div className="space-y-6">
-      <TranscriptionAnalysis text={transcription.transcript} />
-
+    <div className="space-y-8">
       <div className="space-y-4">
-        {/* Заголовок и кнопки */}
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold text-gray-900">
             Результат транскрипции
@@ -105,7 +96,6 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
           />
         </div>
 
-        {/* Название файла с редактированием */}
         <div className="flex items-center gap-2">
           {isEditing ? (
             <div className="flex items-center gap-2 flex-1">
@@ -137,14 +127,9 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
           )}
         </div>
 
-        {/* Метаданные транскрипции */}
         <Card className="border bg-gray-50">
           <CardContent className="pt-4">
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-gray-500">Длительность аудио</p>
-                <p className="font-medium">{transcription.duration ? formatDuration(transcription.duration) : 'N/A'}</p>
-              </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-500">Точность распознавания</p>
                 <p className="font-medium">{transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</p>
@@ -157,13 +142,14 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
           </CardContent>
         </Card>
 
-        {/* Transcription Tabs */}
         <Card>
           <CardContent className="pt-6">
             <TranscriptionTabs transcription={transcription} />
           </CardContent>
         </Card>
       </div>
+
+      <TranscriptionAnalysis text={transcription.transcript} />
     </div>
   );
 }

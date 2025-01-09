@@ -15,11 +15,9 @@ const DEFAULT_OPTIONS: TranscriptionOptions = {
   diarize: true
 };
 
-const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+const calculateCost = (duration: number) => {
+  return Math.ceil(duration / 60);
+};
 
 export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
@@ -40,10 +38,6 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
       return () => clearTimeout(timer);
     }
   }, [isUploading, uploadProgress]);
-
-  const calculateCost = (duration: number) => {
-    return Math.ceil(duration / 60);
-  };
 
   const handleFileSelection = async (file: File) => {
     setIsProcessingFile(true);
@@ -159,18 +153,10 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
       {selectedFile && (
         <>
-          {/* Проигрыватель и информация */}
+          {/* Проигрыватель */}
           <div className="space-y-4 border rounded-lg p-4 bg-background">
             <AudioPlayer file={selectedFile} />
-
-            {audioDuration && (
-              <div className="space-y-2 text-sm text-gray-600">
-                <p>Длительность: {formatDuration(audioDuration)}</p>
-                <p>Стоимость: {calculateCost(audioDuration)} руб.</p>
-              </div>
-            )}
           </div>
-
 
           {/* Загрузка и прогресс */}
           {isUploading && (
@@ -187,14 +173,22 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
             </div>
           )}
 
-          <Button
-            onClick={handleTranscribe}
-            disabled={isUploading}
-            className="w-full"
-          >
-            {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            {isUploading ? "Обработка..." : "Транскрибировать"}
-          </Button>
+          {audioDuration && (
+            <Button
+              onClick={handleTranscribe}
+              disabled={isUploading}
+              className="w-full"
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Обработка...
+                </>
+              ) : (
+                `Транскрибировать за ${calculateCost(audioDuration)} руб.`
+              )}
+            </Button>
+          )}
         </>
       )}
     </div>
