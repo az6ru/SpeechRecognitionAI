@@ -19,7 +19,13 @@ const SPEAKER_COLORS = [
   'border-amber-600 bg-amber-50/90 text-amber-900',
 ];
 
-function ActionButtons({ onCopy, copied }: { onCopy: () => void, copied: boolean }) {
+interface ActionButtonsProps {
+  onCopy: () => void;
+  copied: boolean;
+  transcription: TranscriptionResponse;
+}
+
+function ActionButtons({ onCopy, copied, transcription }: ActionButtonsProps) {
   return (
     <div className="flex gap-2">
       <Button
@@ -81,7 +87,7 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
       <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold">Результат транскрипции</h2>
-          <ActionButtons onCopy={copyToClipboard} copied={copied} />
+          <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
         </div>
 
         {transcription.speakers && transcription.speakers.length > 0 ? (
@@ -120,7 +126,7 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
       </div>
 
       <div className="flex justify-end">
-        <ActionButtons onCopy={copyToClipboard} copied={copied} />
+        <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
       </div>
     </div>
   );
