@@ -19,6 +19,32 @@ const SPEAKER_COLORS = [
   'border-amber-600 bg-amber-50/90 text-amber-900',
 ];
 
+function ActionButtons({ onCopy, copied }: { onCopy: () => void, copied: boolean }) {
+  return (
+    <div className="flex gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onCopy}
+        className="flex items-center gap-2"
+      >
+        {copied ? (
+          <>
+            <CheckCircle className="h-4 w-4" />
+            Скопировано
+          </>
+        ) : (
+          <>
+            <Copy className="h-4 w-4" />
+            Копировать текст
+          </>
+        )}
+      </Button>
+      <ExportButton transcription={transcription} />
+    </div>
+  );
+}
+
 export function TranscriptionResult({ transcription }: TranscriptionResultProps) {
   const [copied, setCopied] = useState(false);
 
@@ -53,6 +79,11 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-semibold">Результат транскрипции</h2>
+          <ActionButtons onCopy={copyToClipboard} copied={copied} />
+        </div>
+
         {transcription.speakers && transcription.speakers.length > 0 ? (
           <div className="space-y-4">
             {transcription.speakers.map((speaker) => (
@@ -88,26 +119,8 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
         )}
       </div>
 
-      <div className="flex justify-end gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={copyToClipboard}
-          className="flex items-center gap-2"
-        >
-          {copied ? (
-            <>
-              <CheckCircle className="h-4 w-4" />
-              Скопировано
-            </>
-          ) : (
-            <>
-              <Copy className="h-4 w-4" />
-              Копировать текст
-            </>
-          )}
-        </Button>
-        <ExportButton transcription={transcription} />
+      <div className="flex justify-end">
+        <ActionButtons onCopy={copyToClipboard} copied={copied} />
       </div>
     </div>
   );
