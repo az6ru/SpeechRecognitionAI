@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
 
@@ -44,12 +43,11 @@ function ActionButtons({ onCopy, copied, transcription }: ActionButtonsProps) {
 
 export function TranscriptionResult({ transcription }: TranscriptionResultProps) {
   const [copied, setCopied] = useState(false);
-  const [speakerNames, setSpeakerNames] = useState<{ [key: number]: string }>({});
 
   const formatText = () => {
     if (transcription.speakers && transcription.speakers.length > 0) {
       return transcription.speakers
-        .map(speaker => `${getSpeakerName(speaker.speaker)}:\n${speaker.text}`)
+        .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}`)
         .join('\n\n');
     }
     if (transcription.paragraphs && transcription.paragraphs.length > 0) {
@@ -62,17 +60,6 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
     await navigator.clipboard.writeText(formatText());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleNameChange = (speakerId: number, name: string) => {
-    setSpeakerNames(prev => ({
-      ...prev,
-      [speakerId]: name
-    }));
-  };
-
-  const getSpeakerName = (speakerId: number) => {
-    return speakerNames[speakerId] || `Спикер ${speakerId + 1}`;
   };
 
   if (!transcription.transcript) {
@@ -103,21 +90,14 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
               {transcription.speakers.map((speaker) => (
                 <div
                   key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
-                  className="flex gap-4"
+                  className="space-y-2"
                 >
-                  <div className="w-48 flex-shrink-0">
-                    <Input
-                      value={getSpeakerName(speaker.speaker)}
-                      onChange={(e) => handleNameChange(speaker.speaker, e.target.value)}
-                      className="h-8 text-sm"
-                      placeholder={`Спикер ${speaker.speaker + 1}`}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm leading-relaxed text-gray-600">
-                      {speaker.text}
-                    </p>
-                  </div>
+                  <p className="text-sm font-bold text-gray-900">
+                    Спикер {speaker.speaker + 1}
+                  </p>
+                  <p className="text-sm leading-relaxed text-gray-600">
+                    {speaker.text}
+                  </p>
                 </div>
               ))}
             </div>
