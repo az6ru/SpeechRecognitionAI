@@ -13,21 +13,24 @@ import type { TranscriptionResponse } from "@/lib/types";
 
 interface ExportButtonProps {
   transcription: TranscriptionResponse;
+  title: string;
 }
 
-export function ExportButton({ transcription }: ExportButtonProps) {
+export function ExportButton({ transcription, title }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const formatTextWithSpeakers = () => {
+    let text = `${title}\n\n`;
     if (transcription.speakers && transcription.speakers.length > 0) {
-      return transcription.speakers
+      text += transcription.speakers
         .map(speaker => `Спикер ${speaker.speaker + 1}:\n${speaker.text}`)
         .join('\n\n');
+    } else if (transcription.paragraphs && transcription.paragraphs.length > 0) {
+      text += transcription.paragraphs.join('\n\n');
+    } else {
+      text += transcription.transcript;
     }
-    if (transcription.paragraphs && transcription.paragraphs.length > 0) {
-      return transcription.paragraphs.join('\n\n');
-    }
-    return transcription.transcript;
+    return text;
   };
 
   const exportAsPDF = async () => {
@@ -38,9 +41,10 @@ export function ExportButton({ transcription }: ExportButtonProps) {
         <html>
         <head>
           <meta charset="UTF-8">
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
           <style>
             body { 
-              font-family: Arial, sans-serif; 
+              font-family: 'Inter', Arial, sans-serif; 
               padding: 15px;
               font-size: 10px;
               line-height: 1.2;
@@ -50,6 +54,11 @@ export function ExportButton({ transcription }: ExportButtonProps) {
               text-align: center; 
               margin-bottom: 15px;
               font-weight: bold;
+            }
+            .title {
+              font-size: 14px;
+              margin-bottom: 12px;
+              font-weight: 500;
             }
             .speaker { 
               margin-bottom: 8px;
@@ -71,7 +80,8 @@ export function ExportButton({ transcription }: ExportButtonProps) {
           </style>
         </head>
         <body>
-          <h1>Транскрипция</h1>
+          <h1>Результат транскрипции</h1>
+          <div class="title">${title}</div>
       `;
 
       if (transcription.speakers && transcription.speakers.length > 0) {
@@ -107,7 +117,7 @@ export function ExportButton({ transcription }: ExportButtonProps) {
       }
 
       const blob = await response.blob();
-      saveAs(blob, "transcription.pdf");
+      saveAs(blob, `${title}.pdf`);
     } catch (error) {
       console.error("Error exporting to PDF:", error);
     } finally {
@@ -123,11 +133,24 @@ export function ExportButton({ transcription }: ExportButtonProps) {
           properties: {},
           children: [
             new Paragraph({
-              text: "Транскрипция",
+              text: "Результат транскрипции",
               heading: HeadingLevel.HEADING_1,
               spacing: {
                 after: 400,
                 line: 360,
+              },
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: title,
+                  size: 28,
+                  bold: true,
+                }),
+              ],
+              spacing: {
+                before: 200,
+                after: 400,
               },
             }),
             ...(transcription.speakers?.map((speaker) => [
@@ -183,7 +206,7 @@ export function ExportButton({ transcription }: ExportButtonProps) {
       });
 
       const blob = await Packer.toBlob(doc);
-      saveAs(blob, "transcription.docx");
+      saveAs(blob, `${title}.docx`);
     } catch (error) {
       console.error("Error exporting to DOCX:", error);
     } finally {
@@ -196,7 +219,7 @@ export function ExportButton({ transcription }: ExportButtonProps) {
     try {
       const formattedText = formatTextWithSpeakers();
       const blob = new Blob([formattedText], { type: "text/plain;charset=utf-8" });
-      saveAs(blob, "transcription.txt");
+      saveAs(blob, `${title}.txt`);
     } catch (error) {
       console.error("Error exporting to TXT:", error);
     } finally {

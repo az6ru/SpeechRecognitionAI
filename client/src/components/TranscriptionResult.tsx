@@ -15,9 +15,10 @@ interface ActionButtonsProps {
   onCopy: () => void;
   copied: boolean;
   transcription: TranscriptionResponse;
+  title: string;
 }
 
-function ActionButtons({ onCopy, copied, transcription }: ActionButtonsProps) {
+function ActionButtons({ onCopy, copied, transcription, title }: ActionButtonsProps) {
   return (
     <div className="flex gap-2">
       <Button
@@ -38,7 +39,7 @@ function ActionButtons({ onCopy, copied, transcription }: ActionButtonsProps) {
           </>
         )}
       </Button>
-      <ExportButton transcription={transcription} />
+      <ExportButton transcription={transcription} title={title} />
     </div>
   );
 }
@@ -87,37 +88,41 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 flex-1">
-          {isEditing ? (
-            <div className="flex items-center gap-2 flex-1">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="max-w-md"
-                autoFocus
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(false)}
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-medium text-gray-900">{title}</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
-        <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
+        <h2 className="text-2xl font-semibold text-gray-900">
+          Результат транскрипции
+        </h2>
+        <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} title={title} />
+      </div>
+
+      <div className="flex items-center gap-2">
+        {isEditing ? (
+          <div className="flex items-center gap-2 flex-1">
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="max-w-md"
+              autoFocus
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(false)}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <p className="text-lg text-gray-700">{title}</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Метаданные транскрипции */}
