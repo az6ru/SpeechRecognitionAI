@@ -1,41 +1,39 @@
 import { Switch, Route } from "wouter";
 import { lazy, Suspense } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
+import { Header } from "@/components/Header";
 
 const Home = lazy(() => import("./pages/Home.tsx"));
 const AuthPage = lazy(() => import("./pages/AuthPage.tsx"));
 
 function App() {
-  const { user, isLoading } = useUser();
+  const { isLoading } = useUser();
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Suspense fallback={<LoadingSpinner />}>
-        <AuthPage />
-      </Suspense>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
-    <Switch>
-      <Route path="/" component={() => (
-        <Suspense fallback={<LoadingSpinner />}>
-          <Home />
-        </Suspense>
-      )} />
-      <Route component={NotFound} />
-    </Switch>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1">
+        <Switch>
+          <Route path="/" component={() => (
+            <Suspense fallback={<LoadingSpinner />}>
+              <Home />
+            </Suspense>
+          )} />
+          <Route path="/auth" component={() => (
+            <Suspense fallback={<LoadingSpinner />}>
+              <AuthPage />
+            </Suspense>
+          )} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+    </div>
   );
 }
 
