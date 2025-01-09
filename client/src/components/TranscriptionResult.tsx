@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
+import { TranscriptionAnalysis } from "./TranscriptionAnalysis";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
@@ -178,6 +179,8 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
           )}
         </CardContent>
       </Card>
+
+      <TranscriptionAnalysis text={transcription.transcript} />
     </div>
   );
 }

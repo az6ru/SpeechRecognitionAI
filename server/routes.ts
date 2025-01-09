@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { transcribeAudio } from "./services/deepgram";
+import { processTranscription } from "./services/ai-processing";
 import pdf from 'html-pdf';
 
 const upload = multer({
@@ -59,6 +60,24 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // New endpoint for AI processing
+  app.post("/api/process-transcription", async (req, res) => {
+    try {
+      const { text } = req.body;
+      if (!text) {
+        return res.status(400).json({ error: "Text content is required" });
+      }
+
+      const result = await processTranscription(text);
+      res.json(result);
+    } catch (error: any) {
+      console.error("AI Processing error:", error);
+      res.status(500).json({
+        error: error.message || "Failed to process transcription",
+      });
+    }
+  });
+
   // Эндпоинт для конвертации HTML в PDF
   app.post("/api/export-pdf", async (req, res) => {
     try {
@@ -70,16 +89,16 @@ export function registerRoutes(app: Express): Server {
       const options = {
         format: 'A4',
         border: {
-          top: "20px",    // Уменьшили с 40px
-          right: "20px",  // Уменьшили с 40px
-          bottom: "20px", // Уменьшили с 40px
-          left: "20px"    // Уменьшили с 40px
+          top: "20px",
+          right: "20px",
+          bottom: "20px",
+          left: "20px"
         },
         header: {
-          height: "15mm"  // Уменьшили с 45mm
+          height: "15mm"
         },
         footer: {
-          height: "10mm"  // Уменьшили с 28mm
+          height: "10mm"
         },
         encoding: 'UTF-8'
       };
