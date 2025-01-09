@@ -4,6 +4,7 @@ import { Mic } from "lucide-react";
 import type { TranscriptionResponse } from "@/lib/types";
 import { FileUpload } from "@/components/FileUpload";
 import { TranscriptionResult } from "@/components/TranscriptionResult";
+import { TranscriptionAnalysis } from "@/components/TranscriptionAnalysis";
 
 export default function Home() {
   const [transcription, setTranscription] = useState<TranscriptionResponse | null>(null);
@@ -37,14 +38,13 @@ export default function Home() {
         </Card>
 
         {transcription && (
-          <Card>
-            <CardContent className="pt-6">
-              <TranscriptionResult 
-                transcription={transcription} 
-                fileName={transcriptionFileName} 
-              />
-            </CardContent>
-          </Card>
+          <div className="space-y-8">
+            <TranscriptionResult 
+              transcription={transcription} 
+              fileName={transcriptionFileName} 
+            />
+            <TranscriptionAnalysis text={transcription.transcript} />
+          </div>
         )}
       </div>
     </div>

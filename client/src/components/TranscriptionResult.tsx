@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle, Edit2, Check } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
@@ -32,7 +31,7 @@ function ActionButtons({ onCopy, copied, transcription, title, activeTab }: Acti
         {copied ? (
           <>
             <CheckCircle className="h-4 w-4" />
-            Копировать текст
+            Скопировать текст
           </>
         ) : (
           <>
@@ -73,78 +72,70 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
 
   if (!transcription.transcript) {
     return (
-      <Card className="bg-destructive/10">
-        <CardContent className="pt-6">
-          <p className="text-destructive font-medium">
-            Нет текста для отображения. Возможно, произошла ошибка при транскрибации.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="bg-destructive/10 p-4 rounded-lg">
+        <p className="text-destructive font-medium">
+          Нет текста для отображения. Возможно, произошла ошибка при транскрибации.
+        </p>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Результат транскрипции
-            </h2>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <span>Точность распознавания: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</span>
-              <span>Язык: {transcription.detected_language || 'N/A'}</span>
-            </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Результат транскрипции
+          </h2>
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <span>Точность распознавания: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</span>
+            <span>Язык: {transcription.detected_language || 'N/A'}</span>
           </div>
-          <ActionButtons 
-            onCopy={copyToClipboard} 
-            copied={copied} 
-            transcription={transcription} 
-            title={title}
-            activeTab={activeTab}
-          />
         </div>
-
-        <div className="flex items-center gap-2">
-          {isEditing ? (
-            <div className="flex items-center gap-2 flex-1">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="max-w-md"
-                autoFocus
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(false)}
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <p className="text-lg text-gray-700">{title}</p>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <TranscriptionTabs 
+        <ActionButtons 
+          onCopy={copyToClipboard} 
+          copied={copied} 
           transcription={transcription} 
-          onTabChange={setActiveTab}
+          title={title}
+          activeTab={activeTab}
         />
       </div>
 
-      <div className="mt-8">
-        <TranscriptionAnalysis text={getActiveText()} />
+      <div className="flex items-center gap-2">
+        {isEditing ? (
+          <div className="flex items-center gap-2 flex-1">
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="max-w-md"
+              autoFocus
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(false)}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <p className="text-lg text-gray-700">{title}</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
-    </>
+
+      <TranscriptionTabs 
+        transcription={transcription} 
+        onTabChange={setActiveTab}
+      />
+    </div>
   );
 }
