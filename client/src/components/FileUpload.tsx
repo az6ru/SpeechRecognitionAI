@@ -4,12 +4,12 @@ import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { TranscriptionResponse, TranscriptionOptions } from "@/lib/types";
+import { TranscriptionOptions } from "@/lib/types";
 import TranscriptionOptionsForm from "./TranscriptionOptionsForm";
 import AudioPlayer from "./AudioPlayer";
 
 interface FileUploadProps {
-  onTranscriptionComplete: (result: TranscriptionResponse) => void;
+  onTranscriptionComplete: (result: any) => void;
 }
 
 const DEFAULT_OPTIONS: TranscriptionOptions = {
@@ -27,7 +27,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const { toast } = useToast();
 
   const calculateCost = (duration: number) => {
-    return Math.ceil(duration / 60); // 1 рубль за минуту
+    return Math.ceil(duration / 60);
   };
 
   const handleFileSelection = async (file: File) => {
@@ -111,69 +111,62 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
-          <TranscriptionOptionsForm options={options} onChange={setOptions} />
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Загрузка аудио</h3>
+        <TranscriptionOptionsForm options={options} onChange={setOptions} />
+      </div>
 
-      <Card className="relative overflow-hidden">
-        <CardContent className="pt-6">
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-md p-8 text-center transition-colors
-              ${isDragActive ? 'border-primary bg-primary/5' : isProcessingFile ? 'border-muted cursor-not-allowed opacity-50' : 'border-muted hover:border-primary'}`}
-          >
-            <input {...getInputProps()} />
-            {isProcessingFile ? (
-              <Loader2 className="mx-auto h-12 w-12 text-muted-foreground animate-spin" />
-            ) : (
-              <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
-            )}
-            <p className="mt-2 text-sm text-muted-foreground">
-              {isProcessingFile
-                ? "Обработка файла..."
-                : isDragActive
-                ? "Перетащите аудио файл сюда"
-                : "Перетащите аудио файл или нажмите для выбора"}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div
+        {...getRootProps()}
+        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors bg-white
+          ${isDragActive ? 'border-primary bg-primary/5' : isProcessingFile ? 'border-muted cursor-not-allowed opacity-50' : 'border-muted hover:border-primary'}`}
+      >
+        <input {...getInputProps()} />
+        {isProcessingFile ? (
+          <Loader2 className="mx-auto h-12 w-12 text-muted-foreground animate-spin" />
+        ) : (
+          <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+        )}
+        <p className="mt-2 text-sm text-muted-foreground">
+          {isProcessingFile
+            ? "Обработка файла..."
+            : isDragActive
+            ? "Перетащите аудио файл сюда"
+            : "Перетащите аудио файл или нажмите для выбора"}
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
+        </p>
+      </div>
 
       {selectedFile && (
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Выбранный файл: {selectedFile.name}
-            </p>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Выбранный файл: {selectedFile.name}
+          </p>
 
-            <AudioPlayer file={selectedFile} />
+          <AudioPlayer file={selectedFile} />
 
-            {audioDuration && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Длительность: {Math.round(audioDuration)} секунд
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Стоимость: {calculateCost(audioDuration)} руб.
-                </p>
-              </div>
-            )}
+          {audioDuration && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Длительность: {Math.round(audioDuration)} секунд
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Стоимость: {calculateCost(audioDuration)} руб.
+              </p>
+            </div>
+          )}
 
-            <Button
-              onClick={handleTranscribe}
-              disabled={isUploading}
-              className="w-full"
-            >
-              {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {isUploading ? "Обработка..." : "Транскрибировать"}
-            </Button>
-          </CardContent>
-        </Card>
+          <Button
+            onClick={handleTranscribe}
+            disabled={isUploading}
+            className="w-full"
+          >
+            {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+            {isUploading ? "Обработка..." : "Транскрибировать"}
+          </Button>
+        </div>
       )}
     </div>
   );

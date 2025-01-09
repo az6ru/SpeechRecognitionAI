@@ -69,34 +69,31 @@ export default function AudioPlayer({ file }: AudioPlayerProps) {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="flex items-center gap-4">
       <audio ref={audioRef} className="hidden" />
+      <Button 
+        variant="ghost" 
+        size="sm"
+        onClick={togglePlay}
+        className="h-8 w-8 p-0"
+      >
+        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+      </Button>
 
-      <div className="flex items-center gap-2">
-        <Button 
-          variant="outline" 
-          size="icon"
-          onClick={togglePlay}
-          className="h-8 w-8"
-        >
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </Button>
-
-        <div className="flex-1">
-          <Slider
-            value={[currentTime]}
-            min={0}
-            max={duration || 100}
-            step={1}
-            onValueChange={handleSeek}
-            className="w-full"
-          />
-        </div>
-
-        <span className="text-sm text-gray-500 min-w-[72px] text-right font-medium">
-          {formatTime(currentTime)} / {formatTime(duration)}
-        </span>
+      <div className="flex-1">
+        <Slider
+          value={[currentTime]}
+          min={0}
+          max={duration || 100}
+          step={1}
+          onValueChange={handleSeek}
+          className="w-full"
+        />
       </div>
+
+      <span className="text-sm text-muted-foreground tabular-nums">
+        {formatTime(currentTime)} / {formatTime(duration)}
+      </span>
     </div>
   );
 }
