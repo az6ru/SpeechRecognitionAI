@@ -17,7 +17,7 @@ export default function Home() {
             <Mic className="h-12 w-12 text-primary" />
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-            Voice Converter — cервис распознавания речи
+            Быстрый cервис распознавания речи
           </h1>
           <p className="mt-4 text-lg text-gray-600">
             Загрузите аудиофайл и получите точную транскрипцию с помощью Voice
