@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Mic } from "lucide-react";
 import type { TranscriptionResponse } from "@/lib/types";
 import { FileUpload } from "@/components/FileUpload";
@@ -24,9 +24,6 @@ export default function Home() {
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Загрузка аудио</CardTitle>
-          </CardHeader>
           <CardContent>
             <FileUpload onTranscriptionComplete={setTranscription} />
           </CardContent>
@@ -34,9 +31,6 @@ export default function Home() {
 
         {transcription && (
           <Card>
-            <CardHeader>
-              <CardTitle>Результат транскрипции</CardTitle>
-            </CardHeader>
             <CardContent>
               <TranscriptionResult transcription={transcription} />
             </CardContent>
