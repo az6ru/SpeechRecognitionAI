@@ -1,53 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
-import compression from "compression";
-import helmet from "helmet";
-import rateLimit from "express-rate-limit";
-import { registerRoutes } from "./routes.js";
-import { setupVite, serveStatic, log } from "./vite.js";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-
-// Enable trust proxy for all proxies
-app.set('trust proxy', 'uniquelocal');
-
-// Security headers with production CSP configuration
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "blob:"],
-      mediaSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'", "blob:"],
-      fontSrc: ["'self'", "data:"],
-      objectSrc: ["'none'"],
-      frameSrc: ["'none'"],
-      "worker-src": ["'self'", "blob:"],
-      upgradeInsecureRequests: null
-    }
-  },
-  crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-
-// Compression
-app.use(compression());
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false
-});
-app.use(limiter);
-
-// Increase JSON limit for PDF generation
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -83,26 +41,25 @@ app.use((req, res, next) => {
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
-    const message = process.env.NODE_ENV === 'production'
-      ? 'Internal Server Error'
-      : err.message || 'Internal Server Error';
-
-    // Log error for debugging in production
-    if (process.env.NODE_ENV === 'production') {
-      console.error('Error:', err);
-    }
+    const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
+    throw err;
   });
 
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  const PORT = process.env.PORT || 5000;
+  // ALWAYS serve the app on port 5000
+  // this serves both the API and the client
+  const PORT = 5000;
   server.listen(PORT, "0.0.0.0", () => {
-    log(`Server running in ${app.get('env')} mode on port ${PORT}`);
+    log(`serving on port ${PORT}`);
   });
 })();

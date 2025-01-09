@@ -1,14 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
-import { transcribeAudio } from "./services/deepgram.js";
+import { transcribeAudio } from "./services/deepgram";
 import pdf from 'html-pdf';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import path from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -25,14 +19,6 @@ const upload = multer({
 });
 
 export function registerRoutes(app: Express): Server {
-  // Обработка ошибок для production
-  const handleError = (error: any, res: any) => {
-    console.error("Operation error:", error);
-    const isProd = process.env.NODE_ENV === 'production';
-    const message = isProd ? 'Internal Server Error' : error.message;
-    res.status(500).json({ error: message });
-  };
-
   app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
     try {
       if (!req.file) {
@@ -66,11 +52,14 @@ export function registerRoutes(app: Express): Server {
       const result = await transcribeAudio(req.file.buffer, options);
       res.json(result);
     } catch (error: any) {
-      handleError(error, res);
+      console.error("Transcription error:", error);
+      res.status(500).json({
+        error: error.message || "Failed to transcribe audio",
+      });
     }
   });
 
-  // Оптимизированная конфигурация для PDF экспорта
+  // Эндпоинт для конвертации HTML в PDF
   app.post("/api/export-pdf", async (req, res) => {
     try {
       const { html } = req.body;
@@ -81,45 +70,33 @@ export function registerRoutes(app: Express): Server {
       const options = {
         format: 'A4',
         border: {
-          top: "20px",
-          right: "20px",
-          bottom: "20px",
-          left: "20px"
+          top: "20px",    // Уменьшили с 40px
+          right: "20px",  // Уменьшили с 40px
+          bottom: "20px", // Уменьшили с 40px
+          left: "20px"    // Уменьшили с 40px
         },
         header: {
-          height: "15mm"
+          height: "15mm"  // Уменьшили с 45mm
         },
         footer: {
-          height: "10mm"
+          height: "10mm"  // Уменьшили с 28mm
         },
-        encoding: 'UTF-8',
-        timeout: 30000,
-        phantomPath: process.env.NODE_ENV === 'production' 
-          ? path.join(__dirname, '..', 'node_modules', 'phantomjs-prebuilt', 'bin', 'phantomjs')
-          : undefined,
+        encoding: 'UTF-8'
       };
 
-      // Add error handling for PDF generation
       pdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {
-          console.error("PDF Generation Error:", err);
-          return handleError(new Error("Failed to generate PDF"), res);
+          console.error("PDF generation error:", err);
+          return res.status(500).json({ error: "Failed to generate PDF" });
         }
 
-        try {
-          // Set proper headers for PDF download
-          res.setHeader('Content-Type', 'application/pdf');
-          res.setHeader('Content-Disposition', 'attachment; filename=transcription.pdf');
-          res.setHeader('Cache-Control', 'no-cache');
-          res.send(buffer);
-        } catch (error) {
-          console.error("Error sending PDF:", error);
-          handleError(error, res);
-        }
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=transcription.pdf');
+        res.send(buffer);
       });
     } catch (error) {
-      console.error("PDF Export Error:", error);
-      handleError(error, res);
+      console.error("PDF export error:", error);
+      res.status(500).json({ error: "Failed to generate PDF" });
     }
   });
 
