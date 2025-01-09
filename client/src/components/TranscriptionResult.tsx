@@ -33,12 +33,12 @@ function ActionButtons({ onCopy, copied, transcription, title, activeTab }: Acti
         {copied ? (
           <>
             <CheckCircle className="h-4 w-4" />
-            Скопировать текст
+            Скопировано
           </>
         ) : (
           <>
             <Copy className="h-4 w-4" />
-            Копировать текст
+            Копировать
           </>
         )}
       </Button>
@@ -67,7 +67,8 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
   };
 
   const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(getActiveText());
+    const textToCopy = getActiveText();
+    await navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

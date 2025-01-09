@@ -67,9 +67,6 @@ export function TranscriptionAnalysis({ text }: TranscriptionAnalysisProps) {
   return (
     <Card>
       <CardContent className="pt-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">
-          Voice Convert AI
-        </h3>
         <Tabs defaultValue="summary" className="w-full">
           <TabsList className="w-full">
             <TabsTrigger value="summary" className="flex-1">Краткое содержание</TabsTrigger>

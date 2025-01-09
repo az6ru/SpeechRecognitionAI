@@ -48,15 +48,8 @@ export default function Home() {
               fileName={transcriptionFileName} 
             />
 
-            {/* Voice Convert AI Analysis */}
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Voice Convert AI
-                </h2>
-                <TranscriptionAnalysis text={transcription.transcript} />
-              </CardContent>
-            </Card>
+            {/* Voice Convert AI */}
+            <TranscriptionAnalysis text={transcription.transcript} />
           </div>
         )}
       </div>
