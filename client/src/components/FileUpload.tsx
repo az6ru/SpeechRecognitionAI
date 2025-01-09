@@ -9,7 +9,7 @@ import { TranscriptionOptions } from "@/lib/types";
 import AudioPlayer from "./AudioPlayer";
 
 interface FileUploadProps {
-  onTranscriptionComplete: (result: any) => void;
+  onTranscriptionComplete: (result: any, fileName: string) => void;
 }
 
 const DEFAULT_OPTIONS: TranscriptionOptions = {
@@ -104,7 +104,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
       setUploadProgress(100);
       const result = await response.json();
-      onTranscriptionComplete(result);
+      onTranscriptionComplete(result, selectedFile.name);
       toast({
         title: "Успех",
         description: "Аудио успешно транскрибировано",

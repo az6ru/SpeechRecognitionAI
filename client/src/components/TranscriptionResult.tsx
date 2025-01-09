@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, CheckCircle } from "lucide-react";
+import { Copy, CheckCircle, Edit2, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
+  fileName?: string;
 }
 
 interface ActionButtonsProps {
@@ -47,8 +49,10 @@ const formatDuration = (seconds: number) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
 
-export function TranscriptionResult({ transcription }: TranscriptionResultProps) {
+export function TranscriptionResult({ transcription, fileName }: TranscriptionResultProps) {
   const [copied, setCopied] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(fileName?.replace(/\.[^/.]+$/, "") || "Новая транскрипция");
 
   const formatText = () => {
     if (transcription.speakers && transcription.speakers.length > 0) {
@@ -83,9 +87,36 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-gray-900">
-          Результат транскрипции
-        </h2>
+        <div className="flex items-center gap-2 flex-1">
+          {isEditing ? (
+            <div className="flex items-center gap-2 flex-1">
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="max-w-md"
+                autoFocus
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditing(false)}
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-medium text-gray-900">{title}</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsEditing(true)}
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
         <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
       </div>
 

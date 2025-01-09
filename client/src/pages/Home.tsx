@@ -6,8 +6,13 @@ import { FileUpload } from "@/components/FileUpload";
 import { TranscriptionResult } from "@/components/TranscriptionResult";
 
 export default function Home() {
-  const [transcription, setTranscription] =
-    useState<TranscriptionResponse | null>(null);
+  const [transcription, setTranscription] = useState<TranscriptionResponse | null>(null);
+  const [transcriptionFileName, setTranscriptionFileName] = useState<string | undefined>();
+
+  const handleTranscriptionComplete = (result: TranscriptionResponse, fileName: string) => {
+    setTranscription(result);
+    setTranscriptionFileName(fileName);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -27,14 +32,17 @@ export default function Home() {
 
         <Card>
           <CardContent className="pt-6">
-            <FileUpload onTranscriptionComplete={setTranscription} />
+            <FileUpload onTranscriptionComplete={handleTranscriptionComplete} />
           </CardContent>
         </Card>
 
         {transcription && (
           <Card>
             <CardContent className="pt-6">
-              <TranscriptionResult transcription={transcription} />
+              <TranscriptionResult 
+                transcription={transcription} 
+                fileName={transcriptionFileName} 
+              />
             </CardContent>
           </Card>
         )}
