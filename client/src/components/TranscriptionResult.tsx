@@ -4,7 +4,6 @@ import { Copy, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
-import { cn } from "@/lib/utils";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
@@ -78,13 +77,13 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
   return (
     <Card className="border">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg font-medium">
+        <CardTitle className="text-lg font-medium text-gray-900">
           Результат транскрипции
         </CardTitle>
         <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
       </CardHeader>
       <CardContent className="pt-0">
-        <Card className="border bg-muted/10">
+        <Card className="border bg-gray-50">
           <CardContent className="pt-4">
             {transcription.speakers && transcription.speakers.length > 0 ? (
               <div className="space-y-4">
@@ -93,10 +92,10 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
                     key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
                     className="space-y-1"
                   >
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-sm font-medium text-gray-900">
                       Спикер {speaker.speaker + 1}
                     </p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
+                    <p className="text-sm leading-relaxed text-gray-600">
                       {speaker.text}
                     </p>
                   </div>
@@ -105,13 +104,13 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
             ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
               <div className="space-y-4">
                 {transcription.paragraphs.map((paragraph, index) => (
-                  <p key={index} className="text-sm leading-relaxed text-muted-foreground">
+                  <p key={index} className="text-sm leading-relaxed text-gray-600">
                     {paragraph}
                   </p>
                 ))}
               </div>
             ) : (
-              <p className="text-sm leading-relaxed text-muted-foreground">
+              <p className="text-sm leading-relaxed text-gray-600">
                 {transcription.transcript}
               </p>
             )}

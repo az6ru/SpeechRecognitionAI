@@ -128,7 +128,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
     <div className="space-y-8">
       {/* Загрузка аудио */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Загрузка аудио</h3>
+        <h3 className="text-lg font-medium text-gray-900">Загрузка аудио</h3>
 
         <div
           {...getRootProps()}
@@ -137,18 +137,18 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
         >
           <input {...getInputProps()} />
           {isProcessingFile ? (
-            <Loader2 className="mx-auto h-12 w-12 text-muted-foreground animate-spin" />
+            <Loader2 className="mx-auto h-12 w-12 text-gray-400 animate-spin" />
           ) : (
-            <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+            <Upload className="mx-auto h-12 w-12 text-gray-400" />
           )}
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-gray-600">
             {isProcessingFile
               ? "Обработка файла..."
               : isDragActive
               ? "Перетащите аудио файл сюда"
               : "Перетащите аудио файл или нажмите для выбора"}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
           </p>
         </div>
@@ -161,7 +161,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
             <AudioPlayer file={selectedFile} />
 
             {audioDuration && (
-              <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="space-y-2 text-sm text-gray-600">
                 <p>Длительность: {Math.round(audioDuration)} секунд</p>
                 <p>Стоимость: {calculateCost(audioDuration)} руб.</p>
               </div>
@@ -170,13 +170,13 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
           {/* Опции транскрибации */}
           <div className="space-y-4 border rounded-lg p-4 bg-background">
-            <h4 className="font-medium">Опции транскрибации</h4>
+            <h4 className="font-medium text-gray-900">Опции транскрибации</h4>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between space-x-2">
                 <div className="space-y-0.5">
-                  <Label>Умное форматирование</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <Label className="text-gray-900">Умное форматирование</Label>
+                  <p className="text-sm text-gray-600">
                     Улучшает читаемость текста: добавляет абзацы, форматирует даты и числа
                   </p>
                 </div>
@@ -188,8 +188,8 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
               <div className="flex items-center justify-between space-x-2">
                 <div className="space-y-0.5">
-                  <Label>Определение спикеров</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <Label className="text-gray-900">Определение спикеров</Label>
+                  <p className="text-sm text-gray-600">
                     Определяет смену говорящих в диалоге
                   </p>
                 </div>
@@ -204,13 +204,13 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
           {/* Загрузка и прогресс */}
           {isUploading && (
             <div className="space-y-2">
-              <div className="w-full bg-secondary rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   className="bg-primary h-2 rounded-full transition-all duration-300" 
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-xs text-gray-600 text-center">
                 {uploadProgress < 100 ? "Загрузка и обработка файла..." : "Завершение..."}
               </p>
             </div>
