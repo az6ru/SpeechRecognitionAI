@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
 
@@ -75,44 +75,47 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
   }
 
   return (
-    <Card className="border bg-gray-50">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg font-medium text-gray-900">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-medium text-gray-900">
           Результат транскрипции
-        </CardTitle>
+        </h2>
         <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
-      </CardHeader>
-      <CardContent className="pt-0">
-        {transcription.speakers && transcription.speakers.length > 0 ? (
-          <div className="space-y-4">
-            {transcription.speakers.map((speaker) => (
-              <div
-                key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
-                className="space-y-1"
-              >
-                <p className="text-sm font-medium text-gray-900">
-                  Спикер {speaker.speaker + 1}
+      </div>
+
+      <Card className="border bg-gray-50">
+        <CardContent className="pt-6">
+          {transcription.speakers && transcription.speakers.length > 0 ? (
+            <div className="space-y-4">
+              {transcription.speakers.map((speaker) => (
+                <div
+                  key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
+                  className="space-y-1"
+                >
+                  <p className="text-sm font-medium text-gray-900">
+                    Спикер {speaker.speaker + 1}
+                  </p>
+                  <p className="text-sm leading-relaxed text-gray-600">
+                    {speaker.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
+            <div className="space-y-4">
+              {transcription.paragraphs.map((paragraph, index) => (
+                <p key={index} className="text-sm leading-relaxed text-gray-600">
+                  {paragraph}
                 </p>
-                <p className="text-sm leading-relaxed text-gray-600">
-                  {speaker.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
-          <div className="space-y-4">
-            {transcription.paragraphs.map((paragraph, index) => (
-              <p key={index} className="text-sm leading-relaxed text-gray-600">
-                {paragraph}
-              </p>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm leading-relaxed text-gray-600">
-            {transcription.transcript}
-          </p>
-        )}
-      </CardContent>
-    </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm leading-relaxed text-gray-600">
+              {transcription.transcript}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
