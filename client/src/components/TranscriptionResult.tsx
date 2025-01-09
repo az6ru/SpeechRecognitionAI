@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
 
@@ -86,18 +87,25 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
       <Card className="border bg-gray-50">
         <CardContent className="pt-6">
           {transcription.speakers && transcription.speakers.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {transcription.speakers.map((speaker) => (
                 <div
                   key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
-                  className="space-y-1"
+                  className="flex gap-4"
                 >
-                  <p className="text-sm font-medium text-gray-900">
-                    Спикер {speaker.speaker + 1}
-                  </p>
-                  <p className="text-sm leading-relaxed text-gray-600">
-                    {speaker.text}
-                  </p>
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {`S${speaker.speaker + 1}`}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      Спикер {speaker.speaker + 1}
+                    </p>
+                    <p className="text-sm leading-relaxed text-gray-600">
+                      {speaker.text}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
