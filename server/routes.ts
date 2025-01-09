@@ -8,6 +8,7 @@ import { setupAuth } from "./auth.js";
 import { db } from "@db";
 import { usageRecords } from "@db/schema";
 import { canTranscribeFile, recordUsage } from "./services/subscription.js";
+import { eq, desc } from "drizzle-orm";
 
 const GUEST_FILE_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB для гостей
 const AUTH_FILE_SIZE_LIMIT = 50 * 1024 * 1024; // 50MB для авторизованных пользователей
