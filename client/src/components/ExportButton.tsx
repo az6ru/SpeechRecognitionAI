@@ -48,7 +48,7 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
               font-family: 'Inter', Arial, sans-serif; 
               padding: 15px;
               font-size: 10px;
-              line-height: 1.2;
+              line-height: 1.4;
             }
             h1 { 
               font-size: 16px; 
@@ -63,12 +63,13 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
             }
             .content { 
               margin-bottom: 6px;
-              line-height: 1.2;
+              line-height: 1.4;
+              white-space: pre-wrap;
             }
           </style>
         </head>
         <body>
-          <h1>Результат транскрипции</h1>
+          <h1>Транскрибация</h1>
           <div class="title">${title}</div>
           <div class="content">${formattedText}</div>
         </body>
@@ -105,7 +106,7 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
           properties: {},
           children: [
             new Paragraph({
-              text: "Результат транскрипции",
+              text: "Транскрибация",
               heading: HeadingLevel.HEADING_1,
               spacing: {
                 after: 400,
