@@ -36,6 +36,7 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
   const exportAsPDF = async () => {
     setIsExporting(true);
     try {
+      const formattedText = formatTextWithSpeakers();
       let htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -60,20 +61,7 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
               margin-bottom: 12px;
               font-weight: 500;
             }
-            .speaker { 
-              margin-bottom: 8px;
-              page-break-inside: avoid;
-            }
-            .speaker-header { 
-              font-weight: bold; 
-              margin-bottom: 4px;
-              font-size: 11px;
-            }
-            .speaker-text { 
-              margin-left: 8px;
-              line-height: 1.2;
-            }
-            .paragraph { 
+            .content { 
               margin-bottom: 6px;
               line-height: 1.2;
             }
@@ -82,24 +70,7 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
         <body>
           <h1>Результат транскрипции</h1>
           <div class="title">${title}</div>
-      `;
-
-      if (transcription.speakers && transcription.speakers.length > 0) {
-        htmlContent += transcription.speakers.map(speaker => `
-          <div class="speaker">
-            <div class="speaker-header">Спикер ${speaker.speaker + 1}:</div>
-            <div class="speaker-text">${speaker.text}</div>
-          </div>
-        `).join('');
-      } else if (transcription.paragraphs && transcription.paragraphs.length > 0) {
-        htmlContent += transcription.paragraphs.map(paragraph => `
-          <div class="paragraph">${paragraph}</div>
-        `).join('');
-      } else {
-        htmlContent += `<div class="paragraph">${transcription.transcript}</div>`;
-      }
-
-      htmlContent += `
+          <div class="content">${formattedText}</div>
         </body>
         </html>
       `;
@@ -128,6 +99,7 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
   const exportAsDocx = async () => {
     setIsExporting(true);
     try {
+      const formattedText = formatTextWithSpeakers();
       const doc = new Document({
         sections: [{
           properties: {},
@@ -153,54 +125,18 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
                 after: 400,
               },
             }),
-            ...(transcription.speakers?.map((speaker) => [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `Спикер ${speaker.speaker + 1}:`,
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-                spacing: {
-                  before: 400,
-                  after: 200,
-                },
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: speaker.text,
-                    size: 24,
-                  }),
-                ],
-                spacing: {
-                  after: 300,
-                },
-              }),
-            ]).flat() || transcription.paragraphs?.map((para) =>
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: para,
-                    size: 24,
-                  }),
-                ],
-                spacing: {
-                  before: 200,
-                  after: 200,
-                },
-              })
-            ) || [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: transcription.transcript,
-                    size: 24,
-                  }),
-                ],
-              }),
-            ]),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: formattedText,
+                  size: 24,
+                }),
+              ],
+              spacing: {
+                before: 200,
+                after: 200,
+              },
+            }),
           ],
         }],
       });
@@ -230,9 +166,9 @@ export function ExportButton({ transcription, title, activeTab }: ExportButtonPr
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button variant="outline" size="sm" className="flex items-center gap-2" disabled={isExporting}>
           <Save className="h-4 w-4" />
-          Экспорт
+          {isExporting ? 'Экспорт...' : 'Экспорт'}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
