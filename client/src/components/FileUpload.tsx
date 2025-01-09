@@ -19,6 +19,7 @@ const DEFAULT_OPTIONS: TranscriptionOptions = {
 
 export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [options, setOptions] = useState<TranscriptionOptions>(DEFAULT_OPTIONS);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
@@ -28,17 +29,32 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
     return Math.ceil(duration / 60); // 1 рубль за минуту
   };
 
-  const handleFileSelection = (file: File) => {
-    const audio = new Audio();
-    const url = URL.createObjectURL(file);
+  const handleFileSelection = async (file: File) => {
+    setIsProcessingFile(true);
+    try {
+      const audio = new Audio();
+      const url = URL.createObjectURL(file);
 
-    audio.addEventListener('loadedmetadata', () => {
-      setAudioDuration(audio.duration);
-      URL.revokeObjectURL(url);
-    });
+      await new Promise((resolve, reject) => {
+        audio.addEventListener('loadedmetadata', () => {
+          setAudioDuration(audio.duration);
+          URL.revokeObjectURL(url);
+          resolve(null);
+        });
+        audio.addEventListener('error', reject);
+        audio.src = url;
+      });
 
-    audio.src = url;
-    setSelectedFile(file);
+      setSelectedFile(file);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Не удалось загрузить аудио файл",
+      });
+    } finally {
+      setIsProcessingFile(false);
+    }
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -88,7 +104,8 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
     accept: {
       'audio/*': ['.mp3', '.wav', '.m4a', '.flac', '.ogg']
     },
-    maxFiles: 1
+    maxFiles: 1,
+    disabled: isProcessingFile
   });
 
   return (
@@ -98,13 +115,19 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-          ${isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary'}
+          ${isDragActive ? 'border-primary bg-primary/5' : isProcessingFile ? 'border-gray-300 cursor-not-allowed opacity-50' : 'border-gray-300 hover:border-primary'}
         `}
       >
         <input {...getInputProps()} />
-        <Upload className="mx-auto h-12 w-12 text-gray-400" />
+        {isProcessingFile ? (
+          <Loader2 className="mx-auto h-12 w-12 text-gray-400 animate-spin" />
+        ) : (
+          <Upload className="mx-auto h-12 w-12 text-gray-400" />
+        )}
         <p className="mt-2 text-sm text-gray-600">
-          {isDragActive
+          {isProcessingFile
+            ? "Обработка файла..."
+            : isDragActive
             ? "Перетащите аудио файл сюда"
             : "Перетащите аудио файл или нажмите для выбора"}
         </p>
