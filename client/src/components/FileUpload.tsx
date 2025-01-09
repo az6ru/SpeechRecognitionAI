@@ -3,6 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { TranscriptionResponse, TranscriptionOptions } from "@/lib/types";
 import TranscriptionOptionsForm from "./TranscriptionOptionsForm";
 import AudioPlayer from "./AudioPlayer";
@@ -110,60 +111,69 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
   return (
     <div className="space-y-6">
-      <TranscriptionOptionsForm options={options} onChange={setOptions} />
+      <Card>
+        <CardContent className="pt-6">
+          <TranscriptionOptionsForm options={options} onChange={setOptions} />
+        </CardContent>
+      </Card>
 
-      <div
-        {...getRootProps()}
-        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-          ${isDragActive ? 'border-primary bg-primary/5' : isProcessingFile ? 'border-gray-300 cursor-not-allowed opacity-50' : 'border-gray-300 hover:border-primary'}
-        `}
-      >
-        <input {...getInputProps()} />
-        {isProcessingFile ? (
-          <Loader2 className="mx-auto h-12 w-12 text-gray-400 animate-spin" />
-        ) : (
-          <Upload className="mx-auto h-12 w-12 text-gray-400" />
-        )}
-        <p className="mt-2 text-sm text-gray-600">
-          {isProcessingFile
-            ? "Обработка файла..."
-            : isDragActive
-            ? "Перетащите аудио файл сюда"
-            : "Перетащите аудио файл или нажмите для выбора"}
-        </p>
-        <p className="text-xs text-gray-500 mt-1">
-          Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
-        </p>
-      </div>
+      <Card className="relative overflow-hidden">
+        <CardContent className="pt-6">
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-md p-8 text-center transition-colors
+              ${isDragActive ? 'border-primary bg-primary/5' : isProcessingFile ? 'border-muted cursor-not-allowed opacity-50' : 'border-muted hover:border-primary'}`}
+          >
+            <input {...getInputProps()} />
+            {isProcessingFile ? (
+              <Loader2 className="mx-auto h-12 w-12 text-muted-foreground animate-spin" />
+            ) : (
+              <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+            )}
+            <p className="mt-2 text-sm text-muted-foreground">
+              {isProcessingFile
+                ? "Обработка файла..."
+                : isDragActive
+                ? "Перетащите аудио файл сюда"
+                : "Перетащите аудио файл или нажмите для выбора"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {selectedFile && (
-        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-          <p className="text-sm text-gray-600">
-            Выбранный файл: {selectedFile.name}
-          </p>
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Выбранный файл: {selectedFile.name}
+            </p>
 
-          <AudioPlayer file={selectedFile} />
+            <AudioPlayer file={selectedFile} />
 
-          {audioDuration && (
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                Длительность: {Math.round(audioDuration)} секунд
-              </p>
-              <p className="text-sm text-gray-600">
-                Стоимость: {calculateCost(audioDuration)} руб.
-              </p>
-            </div>
-          )}
+            {audioDuration && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Длительность: {Math.round(audioDuration)} секунд
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Стоимость: {calculateCost(audioDuration)} руб.
+                </p>
+              </div>
+            )}
 
-          <Button
-            onClick={handleTranscribe}
-            disabled={isUploading}
-            className="w-full"
-          >
-            {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            {isUploading ? "Обработка..." : "Транскрибировать"}
-          </Button>
-        </div>
+            <Button
+              onClick={handleTranscribe}
+              disabled={isUploading}
+              className="w-full"
+            >
+              {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {isUploading ? "Обработка..." : "Транскрибировать"}
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
