@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { TranscriptionOptions } from "@/lib/types";
 import AudioPlayer from "./AudioPlayer";
+import { PromoteSignupDialog } from "./PromoteSignupDialog";
 
 interface FileUploadProps {
   onTranscriptionComplete: (result: any, fileName: string) => void;
@@ -25,6 +26,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
+  const [showSignupDialog, setShowSignupDialog] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -95,6 +97,13 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
       setUploadProgress(100);
       const result = await response.json();
+
+      // Если пользователь гость и транскрибация успешна,
+      // показываем диалог регистрации
+      if (result.isGuest) {
+        setShowSignupDialog(true);
+      }
+
       onTranscriptionComplete(result, selectedFile.name);
       toast({
         title: "Успех",
@@ -191,6 +200,12 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
           )}
         </>
       )}
+
+      {/* Диалог с предложением регистрации */}
+      <PromoteSignupDialog 
+        open={showSignupDialog} 
+        onOpenChange={setShowSignupDialog}
+      />
     </div>
   );
 }
