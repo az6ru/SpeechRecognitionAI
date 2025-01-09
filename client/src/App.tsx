@@ -3,10 +3,30 @@ import { lazy, Suspense } from "react";
 import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { useUser } from "@/hooks/use-user";
 
 const Home = lazy(() => import("./pages/Home.tsx"));
+const AuthPage = lazy(() => import("./pages/AuthPage.tsx"));
 
 function App() {
+  const { user, isLoading } = useUser();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Suspense fallback={<LoadingSpinner />}>
+        <AuthPage />
+      </Suspense>
+    );
+  }
+
   return (
     <Switch>
       <Route path="/" component={() => (
