@@ -32,7 +32,8 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
       diarize: options.diarize === true,
       model: options.model || 'nova-2',
       language: options.language || 'ru',
-      detect_language: options.detect_language ?? true
+      detect_language: options.detect_language ?? true,
+      utterances: options.diarize === true // Enable utterances when diarization is requested
     };
 
     console.log('Request to Deepgram API with options:', JSON.stringify(deepgramOptions, null, 2));
@@ -64,24 +65,36 @@ export async function transcribeAudio(audioBuffer: Buffer, options: Transcriptio
     let speakers: { speaker: number; text: string }[] = [];
 
     // Обработка диаризации, если включена
-    if (options.diarize && alternative.paragraphs) {
+    if (options.diarize && alternative.words) {
       try {
-        const paragraphGroups = Array.isArray(alternative.paragraphs) ? 
-          alternative.paragraphs : 
-          alternative.paragraphs.paragraphs || [];
+        let currentSpeaker = -1;
+        let currentText = '';
 
-        paragraphGroups.forEach((para: any) => {
-          if (para.speaker !== undefined && para.sentences) {
-            const speakerText = Array.isArray(para.sentences) ?
-              para.sentences.map((sentence: any) => sentence.text).join(' ') :
-              para.text || '';
-
-            speakers.push({
-              speaker: para.speaker,
-              text: speakerText
-            });
+        // Group words by speaker
+        for (const word of alternative.words) {
+          if (word.speaker !== undefined) {
+            if (currentSpeaker !== word.speaker && currentText) {
+              // Save previous speaker's text when speaker changes
+              if (currentSpeaker !== -1) {
+                speakers.push({
+                  speaker: currentSpeaker,
+                  text: currentText.trim()
+                });
+              }
+              currentText = '';
+              currentSpeaker = word.speaker;
+            }
+            currentText += ' ' + word.word;
           }
-        });
+        }
+
+        // Don't forget to add the last speaker's text
+        if (currentSpeaker !== -1 && currentText) {
+          speakers.push({
+            speaker: currentSpeaker,
+            text: currentText.trim()
+          });
+        }
 
         console.log('Processed speakers:', speakers);
       } catch (error) {

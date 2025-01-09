@@ -14,7 +14,7 @@ interface FileUploadProps {
 
 const DEFAULT_OPTIONS: TranscriptionOptions = {
   smart_format: true,
-  diarization: false
+  diarize: false
 };
 
 export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
@@ -194,8 +194,8 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
                   </p>
                 </div>
                 <Switch
-                  checked={options.diarization}
-                  onCheckedChange={(checked) => setOptions(prev => ({ ...prev, diarization: checked }))}
+                  checked={options.diarize}
+                  onCheckedChange={(checked) => setOptions(prev => ({ ...prev, diarize: checked }))}
                 />
               </div>
             </div>
