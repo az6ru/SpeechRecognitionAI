@@ -89,39 +89,41 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
         <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
       </div>
 
-      {transcription.speakers && transcription.speakers.length > 0 ? (
-        <div className="space-y-4">
-          {transcription.speakers.map((speaker) => (
-            <div 
-              key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
-              className={`relative border-l-4 pl-4 p-4 rounded-lg shadow-sm 
-                transition-colors duration-200 hover:shadow-md 
-                ${SPEAKER_COLORS[speaker.speaker % SPEAKER_COLORS.length]}`}
-            >
-              <div className="font-medium mb-2 flex items-center gap-2">
-                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full bg-white shadow-sm text-sm font-semibold
-                  ${SPEAKER_COLORS[speaker.speaker % SPEAKER_COLORS.length].replace('bg-', 'text-').replace('/90', '')}`}>
-                  {speaker.speaker + 1}
-                </span>
-                <span className="text-sm">Спикер {speaker.speaker + 1}</span>
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        {transcription.speakers && transcription.speakers.length > 0 ? (
+          <div className="space-y-4">
+            {transcription.speakers.map((speaker) => (
+              <div 
+                key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
+                className={`relative border-l-4 pl-4 p-4 rounded-lg shadow-sm 
+                  transition-colors duration-200 hover:shadow-md 
+                  ${SPEAKER_COLORS[speaker.speaker % SPEAKER_COLORS.length]}`}
+              >
+                <div className="font-medium mb-2 flex items-center gap-2">
+                  <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full bg-white shadow-sm text-sm font-semibold
+                    ${SPEAKER_COLORS[speaker.speaker % SPEAKER_COLORS.length].replace('bg-', 'text-').replace('/90', '')}`}>
+                    {speaker.speaker + 1}
+                  </span>
+                  <span className="text-sm">Спикер {speaker.speaker + 1}</span>
+                </div>
+                <p className="leading-relaxed">{speaker.text}</p>
               </div>
-              <p className="leading-relaxed">{speaker.text}</p>
-            </div>
-          ))}
-        </div>
-      ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
-        <div className="space-y-4">
-          {transcription.paragraphs.map((paragraph, index) => (
-            <p key={index} className="text-gray-700 leading-relaxed">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-          {transcription.transcript}
-        </p>
-      )}
+            ))}
+          </div>
+        ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
+          <div className="space-y-4">
+            {transcription.paragraphs.map((paragraph, index) => (
+              <p key={index} className="text-gray-700 leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+            {transcription.transcript}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
