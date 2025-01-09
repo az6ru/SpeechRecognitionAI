@@ -19,7 +19,6 @@ export default function AudioPlayer({ file }: AudioPlayerProps) {
 
     const url = URL.createObjectURL(file);
     audio.src = url;
-    audio.volume = 0.75; // Set default volume
 
     return () => URL.revokeObjectURL(url);
   }, [file]);
@@ -70,30 +69,31 @@ export default function AudioPlayer({ file }: AudioPlayerProps) {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="flex items-center gap-4 p-2 rounded-md bg-background">
       <audio ref={audioRef} className="hidden" />
 
-      <div className="flex items-center gap-2">
-        <Button 
-          variant="outline" 
-          size="icon"
-          onClick={togglePlay}
-          className="h-8 w-8"
-        >
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </Button>
+      <Button 
+        variant="ghost" 
+        size="icon"
+        onClick={togglePlay}
+        className="h-8 w-8 shrink-0"
+      >
+        {isPlaying ? 
+          <Pause className="h-4 w-4 text-foreground" /> : 
+          <Play className="h-4 w-4 text-foreground" />
+        }
+      </Button>
 
-        <div className="flex-1">
-          <Slider
-            value={[currentTime]}
-            min={0}
-            max={duration || 100}
-            step={1}
-            onValueChange={handleSeek}
-          />
-        </div>
-
-        <span className="text-sm text-muted-foreground min-w-[72px] text-right font-mono">
+      <div className="flex-1 flex items-center gap-4">
+        <Slider
+          value={[currentTime]}
+          min={0}
+          max={duration || 100}
+          step={1}
+          onValueChange={handleSeek}
+          className="flex-1"
+        />
+        <span className="text-sm font-medium text-muted-foreground tabular-nums">
           {formatTime(currentTime)} / {formatTime(duration)}
         </span>
       </div>

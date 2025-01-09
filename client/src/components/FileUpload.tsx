@@ -4,6 +4,7 @@ import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
 import { TranscriptionResponse, TranscriptionOptions } from "@/lib/types";
 import TranscriptionOptionsForm from "./TranscriptionOptionsForm";
 import AudioPlayer from "./AudioPlayer";
@@ -122,7 +123,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans antialiased">
       <TranscriptionOptionsForm options={options} onChange={setOptions} />
 
       <div
@@ -133,60 +134,63 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
       >
         <input {...getInputProps()} />
         <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
-        <p className="mt-2 text-sm text-muted-foreground font-medium">
+        <p className="mt-4 text-base font-medium text-muted-foreground">
           {isDragActive
             ? "Перетащите аудио файл сюда"
             : "Перетащите аудио файл или нажмите для выбора"}
         </p>
-        <p className="text-xs text-muted-foreground/60 mt-1">
+        <p className="mt-2 text-sm text-muted-foreground/60">
           Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
         </p>
       </div>
 
       {selectedFile && (
-        <div className="rounded-lg border p-4 space-y-4">
-          <p className="text-sm font-medium">
-            Выбранный файл: <span className="text-muted-foreground">{selectedFile.name}</span>
-          </p>
-
-          <AudioPlayer file={selectedFile} />
-
-          {isLoadingDuration ? (
-            <div className="flex items-center space-x-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <p className="text-sm text-muted-foreground">
-                Определение длительности...
-              </p>
-            </div>
-          ) : audioDuration ? (
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Длительность: {Math.round(audioDuration)} секунд
-              </p>
+        <Card>
+          <CardContent className="pt-6 space-y-6">
+            <div className="flex items-center justify-between">
               <p className="text-sm font-medium">
-                Стоимость: {calculateCost(audioDuration)} руб.
+                Выбранный файл: <span className="text-muted-foreground">{selectedFile.name}</span>
               </p>
             </div>
-          ) : null}
 
-          {isUploading && (
-            <div className="space-y-2">
-              <Progress value={uploadProgress} className="w-full" />
-              <p className="text-sm text-muted-foreground text-center">
-                Загрузка файла: {uploadProgress}%
-              </p>
-            </div>
-          )}
+            <AudioPlayer file={selectedFile} />
 
-          <Button
-            onClick={handleTranscribe}
-            disabled={isUploading || isLoadingDuration}
-            className="w-full"
-          >
-            {isUploading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            {isUploading ? "Обработка..." : "Транскрибировать"}
-          </Button>
-        </div>
+            {isLoadingDuration ? (
+              <div className="flex items-center justify-center gap-2 text-muted-foreground py-4">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <p className="text-sm">Определение длительности...</p>
+              </div>
+            ) : audioDuration ? (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Длительность: {Math.round(audioDuration)} секунд
+                </p>
+                <p className="text-sm font-medium">
+                  Стоимость: {calculateCost(audioDuration)} руб.
+                </p>
+              </div>
+            ) : null}
+
+            {isUploading && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <p className="text-sm">Загрузка файла: {uploadProgress}%</p>
+                </div>
+                <Progress value={uploadProgress} className="h-2 w-full" />
+              </div>
+            )}
+
+            <Button
+              onClick={handleTranscribe}
+              disabled={isUploading || isLoadingDuration}
+              className="w-full"
+            >
+              {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isUploading ? "Обработка..." : "Транскрибировать"}
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
