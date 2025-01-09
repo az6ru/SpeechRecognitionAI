@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { Play, Pause, Volume2 } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 
@@ -12,7 +12,6 @@ export default function AudioPlayer({ file }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -20,6 +19,7 @@ export default function AudioPlayer({ file }: AudioPlayerProps) {
 
     const url = URL.createObjectURL(file);
     audio.src = url;
+    audio.volume = 0.75; // Set default volume
 
     return () => URL.revokeObjectURL(url);
   }, [file]);
@@ -58,18 +58,9 @@ export default function AudioPlayer({ file }: AudioPlayerProps) {
   const handleSeek = (value: number[]) => {
     const audio = audioRef.current;
     if (!audio) return;
-    
+
     audio.currentTime = value[0];
     setCurrentTime(value[0]);
-  };
-
-  const handleVolume = (value: number[]) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    
-    const newVolume = value[0];
-    audio.volume = newVolume;
-    setVolume(newVolume);
   };
 
   const formatTime = (time: number) => {
@@ -81,7 +72,7 @@ export default function AudioPlayer({ file }: AudioPlayerProps) {
   return (
     <div className="space-y-2">
       <audio ref={audioRef} className="hidden" />
-      
+
       <div className="flex items-center gap-2">
         <Button 
           variant="outline" 
@@ -91,7 +82,7 @@ export default function AudioPlayer({ file }: AudioPlayerProps) {
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
-        
+
         <div className="flex-1">
           <Slider
             value={[currentTime]}
@@ -101,22 +92,10 @@ export default function AudioPlayer({ file }: AudioPlayerProps) {
             onValueChange={handleSeek}
           />
         </div>
-        
-        <span className="text-sm text-gray-500 min-w-[72px] text-right">
+
+        <span className="text-sm text-muted-foreground min-w-[72px] text-right font-mono">
           {formatTime(currentTime)} / {formatTime(duration)}
         </span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Volume2 className="h-4 w-4 text-gray-500" />
-        <Slider
-          value={[volume]}
-          min={0}
-          max={1}
-          step={0.1}
-          onValueChange={handleVolume}
-          className="w-24"
-        />
       </div>
     </div>
   );

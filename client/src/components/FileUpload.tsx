@@ -3,6 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { TranscriptionResponse, TranscriptionOptions } from "@/lib/types";
 import TranscriptionOptionsForm from "./TranscriptionOptionsForm";
 import AudioPlayer from "./AudioPlayer";
@@ -19,6 +20,7 @@ const DEFAULT_OPTIONS: TranscriptionOptions = {
 
 export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [options, setOptions] = useState<TranscriptionOptions>(DEFAULT_OPTIONS);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
@@ -32,23 +34,18 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const handleFileSelection = async (file: File) => {
     setIsLoadingDuration(true);
     setAudioDuration(null);
+    setUploadProgress(0);
 
     try {
-      // Create a blob URL for the audio file
       const url = URL.createObjectURL(file);
-
-      // Create a new promise to handle audio loading
       const duration = await new Promise<number>((resolve, reject) => {
         const audio = new Audio();
-
         audio.addEventListener('loadedmetadata', () => {
           resolve(audio.duration);
         });
-
         audio.addEventListener('error', (e) => {
-          reject(new Error(`Failed to load audio file: ${e.currentTarget.error?.message || 'Unknown error'}`));
+          reject(new Error(`Failed to load audio file: ${e.currentTarget?.error?.message || 'Unknown error'}`));
         });
-
         audio.src = url;
       });
 
@@ -76,23 +73,30 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
     if (!selectedFile) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
 
     const formData = new FormData();
     formData.append("audio", selectedFile);
     formData.append("options", JSON.stringify(options));
 
     try {
-      const response = await fetch("/api/transcribe", {
-        method: "POST",
-        body: formData,
+      const xhr = new XMLHttpRequest();
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(progress);
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
+      const response = await new Promise((resolve, reject) => {
+        xhr.open('POST', '/api/transcribe');
+        xhr.onload = () => resolve(xhr.response);
+        xhr.onerror = () => reject(new Error('Ошибка сети'));
+        xhr.responseType = 'json';
+        xhr.send(formData);
+      });
 
-      const result = await response.json();
-      onTranscriptionComplete(result);
+      onTranscriptionComplete(response as TranscriptionResponse);
       toast({
         title: "Успех",
         description: "Аудио успешно транскрибировано",
@@ -105,6 +109,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
       });
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -123,25 +128,25 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-          ${isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary'}
+          ${isDragActive ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary'}
         `}
       >
         <input {...getInputProps()} />
-        <Upload className="mx-auto h-12 w-12 text-gray-400" />
-        <p className="mt-2 text-sm text-gray-600">
+        <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+        <p className="mt-2 text-sm text-muted-foreground font-medium">
           {isDragActive
             ? "Перетащите аудио файл сюда"
             : "Перетащите аудио файл или нажмите для выбора"}
         </p>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-muted-foreground/60 mt-1">
           Поддерживаются форматы MP3, WAV, M4A, FLAC, OGG
         </p>
       </div>
 
       {selectedFile && (
-        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-          <p className="text-sm text-gray-600">
-            Выбранный файл: {selectedFile.name}
+        <div className="rounded-lg border p-4 space-y-4">
+          <p className="text-sm font-medium">
+            Выбранный файл: <span className="text-muted-foreground">{selectedFile.name}</span>
           </p>
 
           <AudioPlayer file={selectedFile} />
@@ -149,20 +154,29 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
           {isLoadingDuration ? (
             <div className="flex items-center space-x-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Определение длительности...
               </p>
             </div>
           ) : audioDuration ? (
             <div className="space-y-2">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Длительность: {Math.round(audioDuration)} секунд
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm font-medium">
                 Стоимость: {calculateCost(audioDuration)} руб.
               </p>
             </div>
           ) : null}
+
+          {isUploading && (
+            <div className="space-y-2">
+              <Progress value={uploadProgress} className="w-full" />
+              <p className="text-sm text-muted-foreground text-center">
+                Загрузка файла: {uploadProgress}%
+              </p>
+            </div>
+          )}
 
           <Button
             onClick={handleTranscribe}
