@@ -1,9 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { TranscriptionOptions } from "@/lib/types";
 import TranscriptionOptionsForm from "./TranscriptionOptionsForm";
 import AudioPlayer from "./AudioPlayer";
@@ -21,10 +21,24 @@ const DEFAULT_OPTIONS: TranscriptionOptions = {
 export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [options, setOptions] = useState<TranscriptionOptions>(DEFAULT_OPTIONS);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const { toast } = useToast();
+
+  // Эффект для симуляции прогресса загрузки
+  useEffect(() => {
+    if (isUploading && uploadProgress < 90) {
+      const timer = setTimeout(() => {
+        setUploadProgress((prev) => {
+          const increment = Math.random() * 10;
+          return Math.min(prev + increment, 90);
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isUploading, uploadProgress]);
 
   const calculateCost = (duration: number) => {
     return Math.ceil(duration / 60);
@@ -68,6 +82,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
     if (!selectedFile) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
 
     const formData = new FormData();
     formData.append("audio", selectedFile);
@@ -83,6 +98,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
         throw new Error(`Error: ${response.statusText}`);
       }
 
+      setUploadProgress(100);
       const result = await response.json();
       onTranscriptionComplete(result);
       toast({
@@ -97,6 +113,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
       });
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -154,6 +171,15 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
               </p>
               <p className="text-sm text-muted-foreground">
                 Стоимость: {calculateCost(audioDuration)} руб.
+              </p>
+            </div>
+          )}
+
+          {isUploading && (
+            <div className="space-y-2">
+              <Progress value={uploadProgress} />
+              <p className="text-xs text-muted-foreground text-center">
+                {uploadProgress < 100 ? "Загрузка и обработка файла..." : "Завершение..."}
               </p>
             </div>
           )}
