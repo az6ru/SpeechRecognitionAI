@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle } from "lucide-react";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
+import { cn } from "@/lib/utils";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
@@ -15,14 +16,14 @@ interface ActionButtonsProps {
 }
 
 const SPEAKER_COLORS = [
-  'border-blue-600 bg-blue-50/90 text-blue-900',
-  'border-emerald-600 bg-emerald-50/90 text-emerald-900',
-  'border-purple-600 bg-purple-50/90 text-purple-900',
-  'border-orange-600 bg-orange-50/90 text-orange-900',
-  'border-pink-600 bg-pink-50/90 text-pink-900',
-  'border-cyan-600 bg-cyan-50/90 text-cyan-900',
-  'border-red-600 bg-red-50/90 text-red-900',
-  'border-amber-600 bg-amber-50/90 text-amber-900',
+  'bg-blue-50/50 border-blue-200 text-blue-900',
+  'bg-emerald-50/50 border-emerald-200 text-emerald-900',
+  'bg-purple-50/50 border-purple-200 text-purple-900',
+  'bg-orange-50/50 border-orange-200 text-orange-900',
+  'bg-pink-50/50 border-pink-200 text-pink-900',
+  'bg-cyan-50/50 border-cyan-200 text-cyan-900',
+  'bg-red-50/50 border-red-200 text-red-900',
+  'bg-amber-50/50 border-amber-200 text-amber-900',
 ];
 
 function ActionButtons({ onCopy, copied, transcription }: ActionButtonsProps) {
@@ -74,8 +75,8 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
 
   if (!transcription.transcript) {
     return (
-      <div className="bg-yellow-50 rounded-lg p-4">
-        <p className="text-yellow-800">
+      <div className="bg-destructive/10 rounded-lg p-4">
+        <p className="text-destructive font-medium">
           Нет текста для отображения. Возможно, произошла ошибка при транскрибации.
         </p>
       </div>
@@ -85,41 +86,44 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Результат транскрипции</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Результат транскрипции</h2>
         <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
       </div>
 
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+      <div className="bg-muted/50 rounded-lg p-6 shadow-sm border prose-custom max-w-none">
         {transcription.speakers && transcription.speakers.length > 0 ? (
           <div className="space-y-4">
             {transcription.speakers.map((speaker) => (
               <div 
                 key={`${speaker.speaker}-${speaker.text.substring(0, 20)}`}
-                className={`relative border-l-4 pl-4 p-4 rounded-lg shadow-sm 
-                  transition-colors duration-200 hover:shadow-md 
-                  ${SPEAKER_COLORS[speaker.speaker % SPEAKER_COLORS.length]}`}
+                className={cn(
+                  "relative border rounded-lg p-4 shadow-sm transition-colors duration-200",
+                  SPEAKER_COLORS[speaker.speaker % SPEAKER_COLORS.length]
+                )}
               >
                 <div className="font-medium mb-2 flex items-center gap-2">
-                  <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full bg-white shadow-sm text-sm font-semibold
-                    ${SPEAKER_COLORS[speaker.speaker % SPEAKER_COLORS.length].replace('bg-', 'text-').replace('/90', '')}`}>
+                  <span className={cn(
+                    "inline-flex items-center justify-center w-6 h-6 rounded-full bg-background shadow-sm text-sm font-semibold",
+                    "text-foreground"
+                  )}>
                     {speaker.speaker + 1}
                   </span>
                   <span className="text-sm">Спикер {speaker.speaker + 1}</span>
                 </div>
-                <p className="leading-relaxed">{speaker.text}</p>
+                <p className="leading-7 [&:not(:first-child)]:mt-6">{speaker.text}</p>
               </div>
             ))}
           </div>
         ) : transcription.paragraphs && transcription.paragraphs.length > 0 ? (
           <div className="space-y-4">
             {transcription.paragraphs.map((paragraph, index) => (
-              <p key={index} className="text-gray-700 leading-relaxed">
+              <p key={index} className="leading-7 [&:not(:first-child)]:mt-6">
                 {paragraph}
               </p>
             ))}
           </div>
         ) : (
-          <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+          <p className="leading-7 [&:not(:first-child)]:mt-6">
             {transcription.transcript}
           </p>
         )}
