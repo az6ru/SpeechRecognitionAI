@@ -17,6 +17,12 @@ const DEFAULT_OPTIONS: TranscriptionOptions = {
   diarize: false
 };
 
+const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
 export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
@@ -162,7 +168,7 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
             {audioDuration && (
               <div className="space-y-2 text-sm text-gray-600">
-                <p>Длительность: {Math.round(audioDuration)} секунд</p>
+                <p>Длительность: {formatDuration(audioDuration)}</p>
                 <p>Стоимость: {calculateCost(audioDuration)} руб.</p>
               </div>
             )}
@@ -205,8 +211,8 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
           {isUploading && (
             <div className="space-y-2">
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-primary h-2 rounded-full transition-all duration-300" 
+                <div
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
