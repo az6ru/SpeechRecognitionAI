@@ -8,6 +8,12 @@ interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
 }
 
+interface ActionButtonsProps {
+  onCopy: () => void;
+  copied: boolean;
+  transcription: TranscriptionResponse;
+}
+
 const SPEAKER_COLORS = [
   'border-blue-600 bg-blue-50/90 text-blue-900',
   'border-emerald-600 bg-emerald-50/90 text-emerald-900',
@@ -18,12 +24,6 @@ const SPEAKER_COLORS = [
   'border-red-600 bg-red-50/90 text-red-900',
   'border-amber-600 bg-amber-50/90 text-amber-900',
 ];
-
-interface ActionButtonsProps {
-  onCopy: () => void;
-  copied: boolean;
-  transcription: TranscriptionResponse;
-}
 
 function ActionButtons({ onCopy, copied, transcription }: ActionButtonsProps) {
   return (
@@ -84,12 +84,12 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold">Результат транскрипции</h2>
-          <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
-        </div>
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Результат транскрипции</h2>
+        <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
+      </div>
 
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
         {transcription.speakers && transcription.speakers.length > 0 ? (
           <div className="space-y-4">
             {transcription.speakers.map((speaker) => (
@@ -123,10 +123,6 @@ export function TranscriptionResult({ transcription }: TranscriptionResultProps)
             {transcription.transcript}
           </p>
         )}
-      </div>
-
-      <div className="flex justify-end">
-        <ActionButtons onCopy={copyToClipboard} copied={copied} transcription={transcription} />
       </div>
     </div>
   );
