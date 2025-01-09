@@ -177,7 +177,12 @@ export function FileUpload({ onTranscriptionComplete }: FileUploadProps) {
 
           {isUploading && (
             <div className="space-y-2">
-              <Progress value={uploadProgress} />
+              <div className="w-full bg-secondary rounded-full h-2.5">
+                <div 
+                  className="bg-primary h-2.5 rounded-full transition-all duration-300" 
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
               <p className="text-xs text-muted-foreground text-center">
                 {uploadProgress < 100 ? "Загрузка и обработка файла..." : "Завершение..."}
               </p>
