@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle, Edit2, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import type { TranscriptionResponse } from "@/lib/types";
 import { ExportButton } from "./ExportButton";
 import { TranscriptionTabs } from "./TranscriptionTabs";
-import { TranscriptionAnalysis } from "./TranscriptionAnalysis";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface TranscriptionResultProps {
   transcription: TranscriptionResponse;
@@ -84,33 +84,30 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
 
   return (
     <div className="space-y-8">
-      {/* Voice Convert AI Analysis */}
-      <TranscriptionAnalysis text={getActiveText()} />
-
-      {/* Transcription Results */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-6">
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Результат транскрипции
-            </h2>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <span>Точность распознавания: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}</span>
-              <span>Язык: {transcription.detected_language || 'N/A'}</span>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <CardTitle>Результат транскрипции</CardTitle>
+              <div className="flex gap-2">
+                <Badge variant="secondary">
+                  Точность: {transcription.confidence ? `${Math.round(transcription.confidence * 100)}%` : 'N/A'}
+                </Badge>
+                <Badge variant="secondary">
+                  Язык: {transcription.detected_language || 'N/A'}
+                </Badge>
+              </div>
             </div>
+            <ActionButtons 
+              onCopy={copyToClipboard} 
+              copied={copied} 
+              transcription={transcription} 
+              title={title}
+              activeTab={activeTab}
+            />
           </div>
-          <ActionButtons 
-            onCopy={copyToClipboard} 
-            copied={copied} 
-            transcription={transcription} 
-            title={title}
-            activeTab={activeTab}
-          />
-        </div>
-
-        <div className="mb-4">
           {isEditing ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-2">
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -126,7 +123,7 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-2">
               <p className="text-lg text-gray-700">{title}</p>
               <Button
                 variant="ghost"
@@ -137,13 +134,16 @@ export function TranscriptionResult({ transcription, fileName }: TranscriptionRe
               </Button>
             </div>
           )}
-        </div>
-
-        <TranscriptionTabs 
-          transcription={transcription} 
-          onTabChange={setActiveTab}
-        />
-      </div>
+        </CardHeader>
+        <CardContent>
+          <TranscriptionTabs 
+            transcription={transcription} 
+            onTabChange={setActiveTab}
+          />
+        </CardContent>
+      </Card>
+      {/* Voice Convert AI Analysis */}
+      <TranscriptionAnalysis text={getActiveText()} />
     </div>
   );
 }
