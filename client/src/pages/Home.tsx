@@ -24,14 +24,14 @@ export default function Home() {
         </div>
 
         <Card>
-          <CardContent>
+          <CardContent className="pt-6">
             <FileUpload onTranscriptionComplete={setTranscription} />
           </CardContent>
         </Card>
 
         {transcription && (
           <Card>
-            <CardContent>
+            <CardContent className="pt-6">
               <TranscriptionResult transcription={transcription} />
             </CardContent>
           </Card>
